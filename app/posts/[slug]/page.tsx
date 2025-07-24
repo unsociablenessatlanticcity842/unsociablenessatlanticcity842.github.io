@@ -4,7 +4,7 @@ import { getAllPosts, getPostBySlug } from "@/lib/mdx"
 import { MDXContent } from "@/components/mdx-content"
 import { BlogLayout } from "@/components/blog-layout"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, User, Tag, ArrowLeft } from "lucide-react"
+import { Calendar, Clock, Tag, ArrowLeft } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { tagToSlug } from "@/lib/slug"
 import Link from "next/link"
@@ -38,7 +38,6 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       description: post.excerpt,
       type: "article",
       publishedTime: post.date,
-      authors: post.author ? [post.author] : [],
     },
     twitter: {
       card: "summary_large_image",
@@ -77,12 +76,6 @@ export default async function PostPage({ params }: PostPageProps) {
               <Clock className="h-4 w-4" />
               {post.readingTime}
             </span>
-            {post.author && (
-              <span className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                {post.author}
-              </span>
-            )}
           </div>
 
           <div className="flex flex-wrap gap-2">

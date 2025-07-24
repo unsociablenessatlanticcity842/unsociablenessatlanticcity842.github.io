@@ -2,7 +2,7 @@ import Link from "next/link"
 import { formatDate } from "@/lib/utils"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, User, Tag } from "lucide-react"
+import { Calendar, Clock, Tag } from "lucide-react"
 import type { Post } from "@/lib/mdx"
 
 interface PostCardProps {
@@ -24,12 +24,6 @@ export function PostCard({ post }: PostCardProps) {
               <Clock className="h-3 w-3" />
               {post.readingTime}
             </span>
-            {post.author && (
-              <span className="flex items-center gap-1">
-                <User className="h-3 w-3" />
-                {post.author}
-              </span>
-            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
