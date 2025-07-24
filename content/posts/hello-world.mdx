@@ -1,0 +1,84 @@
+---
+title: "Next.js와 shadcn/ui로 개발 블로그 만들기"
+date: "2024-01-15"
+excerpt: "GitHub Pages에 Next.js와 shadcn/ui를 사용하여 정적 블로그를 구축하는 과정을 공유합니다."
+category: "Frontend"
+tags: ["Next.js", "shadcn/ui", "GitHub Pages", "MDX"]
+author: "Kaameo"
+---
+
+안녕하세요! 이번 포스트에서는 Next.js와 shadcn/ui를 사용하여 GitHub Pages에 정적 블로그를 구축하는 과정을 공유하려고 합니다.
+
+## 왜 Next.js와 GitHub Pages인가?
+
+Next.js는 React 기반의 프레임워크로, 정적 사이트 생성(SSG) 기능을 제공합니다. GitHub Pages는 무료로 정적 웹사이트를 호스팅할 수 있는 서비스입니다. 이 둘을 조합하면 비용 없이 고성능의 블로그를 운영할 수 있습니다.
+
+## 주요 기능
+
+우리가 구현한 블로그의 주요 기능은 다음과 같습니다:
+
+- **MDX 지원**: Markdown에 React 컴포넌트를 포함할 수 있습니다
+- **다크 모드**: 사용자 선호도에 따른 테마 전환
+- **태그 및 카테고리**: 포스트 분류 및 탐색
+- **반응형 디자인**: 모든 디바이스에서 최적화된 UI
+- **코드 하이라이팅**: Prism을 사용한 코드 블록 스타일링
+
+## 기술 스택
+
+```typescript
+const techStack = {
+  framework: "Next.js 14",
+  ui: "shadcn/ui",
+  styling: "Tailwind CSS",
+  content: "MDX",
+  deployment: "GitHub Pages",
+  language: "TypeScript"
+}
+```
+
+## 구현 과정
+
+### 1. Next.js 프로젝트 설정
+
+먼저 Next.js 프로젝트를 생성하고 정적 내보내기를 위한 설정을 추가했습니다:
+
+```javascript
+// next.config.js
+module.exports = {
+  output: 'export',
+  basePath: process.env.NODE_ENV === 'production' ? '/repo-name' : '',
+  images: {
+    unoptimized: true,
+  },
+}
+```
+
+### 2. shadcn/ui 설정
+
+shadcn/ui는 Radix UI와 Tailwind CSS를 기반으로 한 컴포넌트 라이브러리입니다. 필요한 컴포넌트만 복사해서 사용할 수 있어 번들 크기를 최적화할 수 있습니다.
+
+### 3. MDX 통합
+
+next-mdx-remote를 사용하여 MDX 파일을 처리하고, gray-matter로 frontmatter를 파싱합니다:
+
+```typescript
+export async function getPostBySlug(slug: string) {
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+  const { data, content } = matter(fileContents)
+  
+  const mdxSource = await serialize(content, {
+    mdxOptions: {
+      remarkPlugins: [remarkGfm],
+      rehypePlugins: [rehypeSlug, rehypeCodeTitles, rehypePrism],
+    },
+  })
+  
+  return { slug, content: mdxSource, ...data }
+}
+```
+
+## 결론
+
+Next.js와 shadcn/ui를 사용하여 GitHub Pages에 블로그를 구축하는 것은 비용 효율적이면서도 강력한 선택입니다. 정적 사이트의 장점인 빠른 로딩 속도와 SEO 최적화를 누리면서도, React의 유연성을 활용할 수 있습니다.
+
+이 블로그의 소스 코드는 [GitHub](https://github.com/kaameo/kaameo.github.io)에서 확인하실 수 있습니다!
