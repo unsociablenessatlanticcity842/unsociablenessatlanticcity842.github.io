@@ -32,7 +32,7 @@ export function Header({ categories, tags }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="px-4 md:px-6 lg:px-8 flex h-16 items-center max-w-[1400px] mx-auto">
         <Link href="/" className="mr-8 flex items-center space-x-2">
           <span className="text-xl font-bold">Kaameo.dev</span>
         </Link>

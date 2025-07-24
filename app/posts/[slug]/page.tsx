@@ -4,11 +4,12 @@ import { getAllPosts, getPostBySlug } from "@/lib/mdx"
 import { MDXContent } from "@/components/mdx-content"
 import { BlogLayout } from "@/components/blog-layout"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, Tag, ArrowLeft } from "lucide-react"
+import { Calendar, Clock, Tag, ArrowLeft, Eye, Code } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { tagToSlug } from "@/lib/slug"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface PostPageProps {
   params: {
@@ -95,9 +96,32 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         </header>
 
-        <div className="prose prose-lg dark:prose-invert max-w-none">
-          <MDXContent source={post.content} />
-        </div>
+        <Tabs defaultValue="preview" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+            <TabsTrigger value="preview" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Preview
+            </TabsTrigger>
+            <TabsTrigger value="markdown" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              Markdown
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="preview" className="mt-6">
+            <div className="prose prose-lg dark:prose-invert max-w-none">
+              <MDXContent source={post.content} />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="markdown" className="mt-6">
+            <div className="rounded-lg border bg-muted/50 p-4 overflow-x-auto">
+              <pre className="text-sm">
+                <code>{post.rawContent}</code>
+              </pre>
+            </div>
+          </TabsContent>
+        </Tabs>
       </article>
     </BlogLayout>
   )

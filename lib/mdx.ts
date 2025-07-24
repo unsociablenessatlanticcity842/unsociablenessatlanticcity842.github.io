@@ -73,10 +73,11 @@ export async function getPostBySlug(slug: string) {
   return {
     slug: realSlug,
     content: mdxSource,
+    rawContent: content,
     readingTime: readTime.text,
     headings,
     ...(data as PostMatter),
-  } as Post & { content: MDXRemoteSerializeResult }
+  } as Post & { content: MDXRemoteSerializeResult, rawContent: string }
 }
 
 export function getAllPosts(): Post[] {

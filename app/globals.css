@@ -56,6 +56,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-y: scroll;
   }
 }
 
@@ -81,11 +82,122 @@
 
 /* Code block styling */
 pre[class*="language-"] {
-  @apply bg-card border border-border rounded-lg overflow-x-auto;
+  @apply bg-card border border-border rounded-lg overflow-x-auto p-4;
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+  @apply text-foreground;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.5;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+/* Inline code */
+:not(pre) > code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm;
+}
+
+/* Syntax highlighting */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  @apply text-muted-foreground;
+}
+
+.token.punctuation {
+  @apply text-foreground;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  @apply text-pink-500 dark:text-pink-400;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  @apply text-green-600 dark:text-green-400;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  @apply text-foreground;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+.token.function,
+.token.class-name {
+  @apply text-yellow-600 dark:text-yellow-400;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  @apply text-orange-600 dark:text-orange-400;
 }
 
 .code-highlight {
   @apply bg-muted/30 -mx-4 px-4 border-l-4 border-primary;
+}
+
+/* Ensure images don't inherit code styling */
+.prose img {
+  @apply max-w-full h-auto rounded-lg shadow-md my-8;
+  border: none !important;
+  padding: 0 !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Remove any borders from images in code blocks */
+.prose pre img,
+.prose code img {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Fix potential white bar issues on images */
+.prose p img,
+.prose figure img {
+  display: block;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+/* Remove any left padding/margin that might cause white bars */
+.prose *:has(> img) {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  border-left: none !important;
 }
 
 .rehype-code-title {
