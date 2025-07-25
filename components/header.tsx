@@ -59,32 +59,37 @@ export function Header({ categories, tags }: HeaderProps) {
               <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                  <li>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        href="/categories/frontend"
-                        className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                      >
-                        <div className="text-sm font-medium leading-none">Frontend</div>
-                        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                          React, Next.js, TypeScript 등 프론트엔드 개발
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <li>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        href="/categories/backend"
-                        className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                      >
-                        <div className="text-sm font-medium leading-none">Backend</div>
-                        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                          Node.js, API, 데이터베이스 관련 개발
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
+                  {categories.map((category) => {
+                    const categoryDescriptions: Record<string, string> = {
+                      Frontend: "React, Next.js, TypeScript 등 프론트엔드 개발",
+                      Backend: "Node.js, API, 데이터베이스 관련 개발",
+                      DevOps: "CI/CD, Docker, 클라우드 인프라 관련",
+                      // 다른 카테고리에 대한 설명을 여기에 추가
+                    }
+                    
+                    return (
+                      <li key={category.name}>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            href={`/categories/${category.name.toLowerCase()}`}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium leading-none">{category.name}</span>
+                              <Badge variant="secondary" className="text-xs">
+                                {category.count}
+                              </Badge>
+                            </div>
+                            {categoryDescriptions[category.name] && (
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                {categoryDescriptions[category.name]}
+                              </p>
+                            )}
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                    )
+                  })}
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>

@@ -80,11 +80,7 @@
   --tw-prose-td-borders: hsl(var(--border));
 }
 
-/* Code block styling */
-pre[class*="language-"] {
-  @apply bg-card border border-border rounded-lg overflow-x-auto p-4;
-}
-
+/* Enhanced code block styling for new component */
 code[class*="language-"],
 pre[class*="language-"] {
   @apply text-foreground;
@@ -101,23 +97,28 @@ pre[class*="language-"] {
   -moz-hyphens: none;
   -ms-hyphens: none;
   hyphens: none;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
-/* Inline code */
-:not(pre) > code {
-  @apply bg-muted px-1.5 py-0.5 rounded text-sm;
+/* Remove default pre styling since we use custom component */
+pre[class*="language-"] {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  border: none;
 }
 
-/* Syntax highlighting */
+/* Enhanced syntax highlighting with better contrast */
 .token.comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
-  @apply text-muted-foreground;
+  @apply text-slate-500 dark:text-slate-400 italic;
 }
 
 .token.punctuation {
-  @apply text-foreground;
+  @apply text-slate-600 dark:text-slate-300;
 }
 
 .token.property,
@@ -127,7 +128,7 @@ pre[class*="language-"] {
 .token.constant,
 .token.symbol,
 .token.deleted {
-  @apply text-pink-500 dark:text-pink-400;
+  @apply text-rose-600 dark:text-rose-400;
 }
 
 .token.selector,
@@ -136,7 +137,7 @@ pre[class*="language-"] {
 .token.char,
 .token.builtin,
 .token.inserted {
-  @apply text-green-600 dark:text-green-400;
+  @apply text-emerald-600 dark:text-emerald-400;
 }
 
 .token.operator,
@@ -144,24 +145,41 @@ pre[class*="language-"] {
 .token.url,
 .language-css .token.string,
 .style .token.string {
-  @apply text-foreground;
+  @apply text-cyan-600 dark:text-cyan-400;
 }
 
 .token.atrule,
 .token.attr-value,
 .token.keyword {
-  @apply text-blue-600 dark:text-blue-400;
+  @apply text-violet-600 dark:text-violet-400 font-medium;
 }
 
 .token.function,
 .token.class-name {
-  @apply text-yellow-600 dark:text-yellow-400;
+  @apply text-amber-600 dark:text-amber-400;
 }
 
 .token.regex,
 .token.important,
 .token.variable {
   @apply text-orange-600 dark:text-orange-400;
+}
+
+/* Additional token types for better coverage */
+.token.namespace {
+  @apply text-sky-600 dark:text-sky-400;
+}
+
+.token.parameter {
+  @apply text-purple-600 dark:text-purple-400;
+}
+
+.token.decorator {
+  @apply text-pink-600 dark:text-pink-400;
+}
+
+.token.module {
+  @apply text-indigo-600 dark:text-indigo-400;
 }
 
 .code-highlight {
