@@ -1,0 +1,375 @@
+---
+title: "Kubernetes 기초: 컨테이너 오케스트레이션 시작하기"
+date: "2024-01-27"
+excerpt: "Kubernetes의 핵심 개념과 기본 명령어를 통해 컨테이너 오케스트레이션의 기초를 다집니다."
+category: "DevOps"
+tags: ["Kubernetes", "K8s", "Container", "Docker", "오케스트레이션"]
+author: "Kaameo"
+---
+
+Kubernetes(K8s)는 컨테이너화된 애플리케이션의 배포, 확장 및 관리를 자동화하는 오픈소스 플랫폼입니다. 
+Google에서 개발하여 현재는 CNCF(Cloud Native Computing Foundation)에서 관리하고 있습니다.
+
+## Kubernetes가 필요한 이유
+
+### 컨테이너 오케스트레이션의 필요성
+- **수동 관리의 한계**: 수십, 수백 개의 컨테이너를 수동으로 관리하는 것은 불가능
+- **고가용성**: 컨테이너가 죽으면 자동으로 재시작
+- **확장성**: 트래픽에 따른 자동 스케일링
+- **무중단 배포**: 롤링 업데이트를 통한 서비스 중단 없는 배포
+
+## Kubernetes 아키텍처
+
+### 마스터 노드 (Control Plane)
+```
+Control Plane
+├── API Server      # 모든 통신의 중심
+├── etcd           # 클러스터 상태 저장소
+├── Controller     # 상태 관리
+├── Scheduler      # Pod 배치 결정
+└── Cloud Controller Manager
+```
+
+### 워커 노드
+```
+Worker Node
+├── kubelet        # 노드의 에이전트
+├── kube-proxy     # 네트워크 프록시
+└── Container Runtime (Docker/containerd)
+```
+
+## 핵심 개념
+
+### 1. Pod
+- Kubernetes의 가장 작은 배포 단위
+- 하나 이상의 컨테이너 그룹
+- 같은 Pod 내 컨테이너는 네트워크와 스토리지 공유
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+```
+
+### 2. Deployment
+- Pod의 선언적 업데이트를 제공
+- 복제본 수 관리 및 롤링 업데이트 지원
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+```
+
+### 3. Service
+- Pod 집합에 대한 안정적인 네트워크 엔드포인트
+- 로드 밸런싱 제공
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+```
+
+## 실습: 첫 번째 애플리케이션 배포
+
+### 1. Minikube 설치 (로컬 K8s 클러스터)
+
+```bash
+# macOS
+brew install minikube
+
+# Linux
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# 클러스터 시작
+minikube start
+```
+
+### 2. kubectl 설치
+
+```bash
+# macOS
+brew install kubectl
+
+# Linux
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# 버전 확인
+kubectl version --client
+```
+
+### 3. 애플리케이션 배포
+
+#### Deployment 생성
+```bash
+# deployment.yaml 파일 생성
+cat <<EOF > deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-k8s
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-k8s
+  template:
+    metadata:
+      labels:
+        app: hello-k8s
+    spec:
+      containers:
+      - name: hello-k8s
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        env:
+        - name: MESSAGE
+          value: "Hello Kubernetes!"
+EOF
+
+# 배포
+kubectl apply -f deployment.yaml
+```
+
+#### Service 생성
+```bash
+# service.yaml 파일 생성
+cat <<EOF > service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-k8s-service
+spec:
+  selector:
+    app: hello-k8s
+  ports:
+  - port: 80
+    targetPort: 80
+  type: NodePort
+EOF
+
+# 서비스 생성
+kubectl apply -f service.yaml
+```
+
+### 4. 확인 및 접속
+
+```bash
+# Pod 상태 확인
+kubectl get pods
+
+# Service 확인
+kubectl get services
+
+# Minikube에서 서비스 접속
+minikube service hello-k8s-service
+```
+
+## 유용한 kubectl 명령어
+
+### 기본 명령어
+```bash
+# 리소스 조회
+kubectl get pods                    # Pod 목록
+kubectl get deployments             # Deployment 목록
+kubectl get services               # Service 목록
+kubectl get nodes                  # Node 목록
+
+# 상세 정보
+kubectl describe pod <pod-name>
+kubectl describe deployment <deployment-name>
+
+# 로그 확인
+kubectl logs <pod-name>
+kubectl logs -f <pod-name>         # 실시간 로그
+
+# Pod 접속
+kubectl exec -it <pod-name> -- /bin/bash
+```
+
+### 관리 명령어
+```bash
+# 스케일링
+kubectl scale deployment <deployment-name> --replicas=5
+
+# 롤링 업데이트
+kubectl set image deployment/<deployment-name> <container-name>=<new-image>
+
+# 삭제
+kubectl delete pod <pod-name>
+kubectl delete deployment <deployment-name>
+kubectl delete service <service-name>
+```
+
+## ConfigMap과 Secret
+
+### ConfigMap - 설정 관리
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  database_url: "mysql://localhost:3306/mydb"
+  api_key: "development-key"
+```
+
+### Secret - 민감 정보 관리
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+type: Opaque
+data:
+  username: YWRtaW4=  # base64 encoded
+  password: MWYyZDFlMmU2N2Rm  # base64 encoded
+```
+
+### Pod에서 사용
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-pod
+spec:
+  containers:
+  - name: app
+    image: myapp:latest
+    env:
+    - name: DB_URL
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database_url
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: password
+```
+
+## 네임스페이스 활용
+
+```bash
+# 네임스페이스 생성
+kubectl create namespace development
+kubectl create namespace production
+
+# 네임스페이스 지정하여 리소스 생성
+kubectl apply -f deployment.yaml -n development
+
+# 네임스페이스의 모든 리소스 조회
+kubectl get all -n development
+
+# 기본 네임스페이스 변경
+kubectl config set-context --current --namespace=development
+```
+
+## 모니터링과 디버깅
+
+### 리소스 사용량 확인
+```bash
+# Node 리소스 사용량
+kubectl top nodes
+
+# Pod 리소스 사용량
+kubectl top pods
+
+# 특정 Pod의 상세 메트릭
+kubectl top pod <pod-name> --containers
+```
+
+### 문제 해결
+```bash
+# Pod가 시작되지 않을 때
+kubectl describe pod <pod-name>
+kubectl logs <pod-name> --previous
+
+# 이벤트 확인
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+# Pod 재시작
+kubectl rollout restart deployment <deployment-name>
+```
+
+## 실전 팁
+
+### 1. 레이블과 셀렉터 활용
+```bash
+# 레이블로 필터링
+kubectl get pods -l app=nginx
+kubectl get pods -l 'environment in (production, staging)'
+```
+
+### 2. Dry-run으로 미리 확인
+```bash
+kubectl apply -f deployment.yaml --dry-run=client
+```
+
+### 3. YAML 파일 생성 팁
+```bash
+# 기존 리소스에서 YAML 추출
+kubectl get deployment nginx-deployment -o yaml > deployment-backup.yaml
+
+# imperative 명령으로 YAML 생성
+kubectl create deployment nginx --image=nginx --dry-run=client -o yaml > deployment.yaml
+```
+
+## 다음 단계
+
+1. **Ingress**: 외부 트래픽을 클러스터 내부로 라우팅
+2. **StatefulSet**: 상태를 가진 애플리케이션 관리
+3. **DaemonSet**: 모든 노드에 Pod 배포
+4. **Helm**: Kubernetes 패키지 매니저
+5. **Operators**: 애플리케이션별 자동화
+
+## 마무리
+
+Kubernetes는 처음에는 복잡해 보일 수 있지만, 핵심 개념을 이해하면 강력한 도구가 됩니다.
+Pod, Deployment, Service의 관계를 이해하고, kubectl 명령어에 익숙해지면 기본적인 애플리케이션 배포와 관리가 가능합니다.
+
+다음 포스트에서는 Kubernetes의 네트워킹과 Ingress에 대해 자세히 알아보겠습니다!
+
+## 참고 자료
+- [Kubernetes 공식 문서](https://kubernetes.io/ko/docs/)
+- [Kubernetes 튜토리얼](https://kubernetes.io/ko/docs/tutorials/)
+- [kubectl 치트시트](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+- [Minikube 문서](https://minikube.sigs.k8s.io/docs/)

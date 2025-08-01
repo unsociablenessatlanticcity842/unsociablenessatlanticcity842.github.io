@@ -1,0 +1,193 @@
+---
+title: "Spring Boot 시작하기: 첫 번째 REST API 만들기"
+date: "2024-01-25"
+excerpt: "Spring Boot를 사용하여 간단한 REST API를 만드는 방법을 단계별로 알아봅니다."
+category: "Spring"
+tags: ["Spring Boot", "Java", "REST API", "Backend"]
+author: "Kaameo"
+---
+
+Spring Boot는 Spring 프레임워크를 기반으로 한 강력한 Java 웹 애플리케이션 프레임워크입니다. 
+이번 포스트에서는 Spring Boot를 사용하여 첫 번째 REST API를 만드는 과정을 알아보겠습니다.
+
+## Spring Boot란?
+
+Spring Boot는 Spring 기반 애플리케이션을 쉽고 빠르게 만들 수 있도록 도와주는 프레임워크입니다. 
+복잡한 설정 없이도 production-ready 애플리케이션을 만들 수 있다는 것이 가장 큰 장점입니다.
+
+### 주요 특징
+- **자동 설정(Auto Configuration)**: 일반적인 설정을 자동으로 처리
+- **내장 서버**: Tomcat, Jetty 등의 서버가 내장되어 있음
+- **의존성 관리**: starter 패키지로 쉬운 의존성 관리
+- **Production-ready**: 메트릭, 헬스체크 등 운영에 필요한 기능 제공
+
+## 프로젝트 설정
+
+### 1. Spring Initializr 사용
+
+[Spring Initializr](https://start.spring.io/)에서 프로젝트를 생성하거나, IDE에서 직접 생성할 수 있습니다.
+
+필요한 의존성:
+- Spring Web
+- Spring Boot DevTools
+- Lombok (선택사항)
+
+### 2. 프로젝트 구조
+
+```
+my-first-api/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/example/demo/
+│   │   │       ├── DemoApplication.java
+│   │   │       ├── controller/
+│   │   │       ├── service/
+│   │   │       └── model/
+│   │   └── resources/
+│   │       └── application.properties
+└── pom.xml
+```
+
+## REST API 구현
+
+### 1. 모델 클래스 생성
+
+```java
+package com.example.demo.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+    private Long id;
+    private String name;
+    private String email;
+    private Integer age;
+}
+```
+
+### 2. 컨트롤러 구현
+
+```java
+package com.example.demo.controller;
+
+import com.example.demo.model.User;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    
+    private final List<User> users = new ArrayList<>();
+    private final AtomicLong counter = new AtomicLong();
+    
+    // 모든 사용자 조회
+    @GetMapping
+    public List<User> getAllUsers() {
+        return users;
+    }
+    
+    // 특정 사용자 조회
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id) {
+        return users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+    
+    // 사용자 생성
+    @PostMapping
+    public User createUser(@RequestBody User user) {
+        user.setId(counter.incrementAndGet());
+        users.add(user);
+        return user;
+    }
+    
+    // 사용자 수정
+    @PutMapping("/{id}")
+    public User updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+        User user = getUserById(id);
+        if (user != null) {
+            user.setName(updatedUser.getName());
+            user.setEmail(updatedUser.getEmail());
+            user.setAge(updatedUser.getAge());
+        }
+        return user;
+    }
+    
+    // 사용자 삭제
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        users.removeIf(user -> user.getId().equals(id));
+    }
+}
+```
+
+### 3. Application Properties 설정
+
+```properties
+# application.properties
+server.port=8080
+spring.application.name=my-first-api
+
+# 개발 환경 설정
+spring.devtools.livereload.enabled=true
+spring.devtools.restart.enabled=true
+```
+
+## API 테스트
+
+### curl을 사용한 테스트
+
+```bash
+# 사용자 생성
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"홍길동","email":"hong@example.com","age":25}'
+
+# 모든 사용자 조회
+curl http://localhost:8080/api/users
+
+# 특정 사용자 조회
+curl http://localhost:8080/api/users/1
+
+# 사용자 수정
+curl -X PUT http://localhost:8080/api/users/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"홍길동","email":"hong.new@example.com","age":26}'
+
+# 사용자 삭제
+curl -X DELETE http://localhost:8080/api/users/1
+```
+
+## 다음 단계
+
+이제 기본적인 REST API를 만들었습니다. 다음 단계로는:
+
+1. **데이터베이스 연동**: JPA를 사용한 영속성 계층 추가
+2. **예외 처리**: 전역 예외 처리기 구현
+3. **검증**: Bean Validation을 사용한 입력 검증
+4. **보안**: Spring Security를 사용한 인증/인가
+5. **문서화**: Swagger/OpenAPI를 사용한 API 문서화
+
+## 마무리
+
+Spring Boot를 사용하면 복잡한 설정 없이도 빠르게 REST API를 만들 수 있습니다. 
+이번 포스트에서는 기본적인 CRUD 기능을 구현했지만, 실제 프로덕션에서는 더 많은 고려사항이 필요합니다.
+
+다음 포스트에서는 JPA를 사용하여 데이터베이스와 연동하는 방법을 알아보겠습니다!
+
+## 참고 자료
+- [Spring Boot 공식 문서](https://spring.io/projects/spring-boot)
+- [Spring Boot Reference Guide](https://docs.spring.io/spring-boot/docs/current/reference/html/)
+- [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
