@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-export function useSearchNavigation() {
+export function useSearchNavigation(enabled: boolean = true) {
   const router = useRouter()
 
   useEffect(() => {
+    if (!enabled) return
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Slash key to navigate to posts page with search focus (when not typing in an input)
       if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
@@ -16,5 +18,5 @@ export function useSearchNavigation() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [router])
+  }, [router, enabled])
 }

@@ -14,10 +14,9 @@ export function SearchLink({
   showShortcut = false,
   enableKeyboardNavigation = false 
 }: SearchLinkProps) {
-  // Enable "/" key navigation on home page
-  if (enableKeyboardNavigation) {
-    useSearchNavigation()
-  }
+  // Always call the hook, but it only adds event listeners when enabled
+  useSearchNavigation(enableKeyboardNavigation)
+  
   return (
     <Link href="/posts">
       <Button size="lg" variant="outline" className="group relative">

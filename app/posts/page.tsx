@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { Suspense } from "react"
 import { getAllPosts } from "@/lib/mdx"
 import { PostsSearch } from "@/components/posts-search"
 
@@ -16,7 +17,9 @@ export default function PostsPage() {
         <h1 className="text-4xl font-bold">모든 포스트</h1>
       </div>
 
-      <PostsSearch posts={posts} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <PostsSearch posts={posts} />
+      </Suspense>
     </div>
   )
 }
