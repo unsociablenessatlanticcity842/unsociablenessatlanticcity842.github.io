@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Github, Twitter, Linkedin, Mail } from "lucide-react"
+import { Github, Linkedin } from "lucide-react"
 
 export function Footer() {
   return (
@@ -7,7 +7,7 @@ export function Footer() {
       <div className="px-4 md:px-6 lg:px-8 max-w-[1400px] mx-auto flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
           <p className="text-center text-sm leading-loose md:text-left">
-            © 2024 Kaameo. Built with{" "}
+            © 2025 Kaameo. Built with{" "}
             <Link
               href="https://nextjs.org"
               target="_blank"
@@ -39,29 +39,13 @@ export function Footer() {
             <span className="sr-only">GitHub</span>
           </Link>
           <Link
-            href="https://twitter.com/kaameo"
-            target="_blank"
-            rel="noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <Twitter className="h-5 w-5" />
-            <span className="sr-only">Twitter</span>
-          </Link>
-          <Link
-            href="https://linkedin.com/in/kaameo"
+            href="https://linkedin.com/in/jinsu-hong-916a42341/"
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-foreground"
           >
             <Linkedin className="h-5 w-5" />
             <span className="sr-only">LinkedIn</span>
-          </Link>
-          <Link
-            href="mailto:kaameo@example.com"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <Mail className="h-5 w-5" />
-            <span className="sr-only">Email</span>
           </Link>
         </div>
       </div>
