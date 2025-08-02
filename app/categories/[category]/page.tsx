@@ -12,12 +12,25 @@ interface CategoryPageProps {
 export async function generateStaticParams() {
   const categories = getAllCategories()
   return categories.map((category) => ({
-    category: category.toLowerCase(),
+    category: category.toLowerCase().replace(/\s+/g, '-'),
   }))
 }
 
+// Create a map for category slug to actual category name
+function getCategoryFromSlug(slug: string): string {
+  const categories = getAllCategories()
+  const normalizedSlug = slug.toLowerCase()
+  
+  // Find the category that matches when lowercased and spaces replaced with hyphens
+  const matchedCategory = categories.find(
+    cat => cat.toLowerCase().replace(/\s+/g, '-') === normalizedSlug
+  )
+  
+  return matchedCategory || slug
+}
+
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const categoryName = params.category.charAt(0).toUpperCase() + params.category.slice(1)
+  const categoryName = getCategoryFromSlug(params.category)
   
   return {
     title: `${categoryName} 카테고리`,
@@ -26,7 +39,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
-  const categoryName = params.category.charAt(0).toUpperCase() + params.category.slice(1)
+  const categoryName = getCategoryFromSlug(params.category)
   const posts = getPostsByCategory(categoryName)
   
   if (posts.length === 0) {

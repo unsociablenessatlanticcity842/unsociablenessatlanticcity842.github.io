@@ -64,11 +64,7 @@ export function CodeBlock({
           
           {/* Language Badge */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="inline-block h-3 w-3 rounded-full bg-red-500/80" />
-              <span className="inline-block h-3 w-3 rounded-full bg-yellow-500/80" />
-              <span className="inline-block h-3 w-3 rounded-full bg-green-500/80" />
-            </div>
+            
             <span className="text-xs font-medium text-muted-foreground">
               {language}
             </span>
@@ -108,7 +104,7 @@ export function CodeBlock({
           <div className="flex">
             {/* Line Numbers */}
             {showLineNumbers && lineNumbers > 0 && (
-              <div className="select-none border-r border-border/50 bg-muted/10 px-3 py-4 text-right">
+              <div className="select-none border-r border-border/50 bg-muted/10 px-3 py-5 text-right">
                 {Array.from({ length: lineNumbers }, (_, i) => (
                   <div key={i + 1} className="text-xs leading-6 text-muted-foreground">
                     {i + 1}
@@ -121,11 +117,11 @@ export function CodeBlock({
             <pre
               ref={codeRef}
               className={cn(
-                "flex-1 overflow-x-auto p-4 text-md leading-6",
+                "flex-1 overflow-x-auto text-lg leading-6",
                 className
               )}
             >
-              <code>{children}</code>
+              <code className="block px-6 py-5">{children}</code>
             </pre>
           </div>
         </div>

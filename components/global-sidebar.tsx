@@ -90,11 +90,11 @@ export function GlobalSidebar({ categories, tags }: GlobalSidebarProps) {
             <AccordionContent>
               <ul className="space-y-0.5" role="list">
                 {categories.map((category) => {
-                  const isActive = currentCategory === category.name.toLowerCase()
+                  const isActive = currentCategory === category.name.toLowerCase().replace(/\s+/g, '-')
                   return (
                     <li key={category.name}>
                       <Link
-                        href={`/categories/${category.name.toLowerCase()}`}
+                        href={`/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
                         className={cn(
                           "flex items-center justify-between rounded-md px-2 py-1.5 text-xs transition-colors hover:bg-accent hover:text-accent-foreground",
                           isActive && "bg-accent text-accent-foreground font-medium"

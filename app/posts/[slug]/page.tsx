@@ -81,7 +81,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
           <div className="flex flex-wrap gap-2">
             {post.category && (
-              <Link href={`/categories/${post.category.toLowerCase()}`}>
+              <Link href={`/categories/${post.category.toLowerCase().replace(/\s+/g, '-')}`}>
                 <Badge variant="secondary">{post.category}</Badge>
               </Link>
             )}

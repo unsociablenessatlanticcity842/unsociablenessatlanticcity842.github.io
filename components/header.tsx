@@ -71,7 +71,7 @@ export function Header({ categories, tags }: HeaderProps) {
                       <li key={category.name}>
                         <NavigationMenuLink asChild>
                           <Link
-                            href={`/categories/${category.name.toLowerCase()}`}
+                            href={`/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
                             className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="flex items-center justify-between">
@@ -147,7 +147,7 @@ export function Header({ categories, tags }: HeaderProps) {
                     {categories.map((category) => (
                       <Link
                         key={category.name}
-                        href={`/categories/${category.name.toLowerCase()}`}
+                        href={`/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
                         className="flex items-center justify-between py-1 text-sm hover:text-accent-foreground"
                         onClick={() => setMobileMenuOpen(false)}
                       >

@@ -54,7 +54,7 @@ export function BlogSidebar({
                   return (
                     <li key={category.name}>
                       <Link
-                        href={`/categories/${category.name.toLowerCase()}`}
+                        href={`/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
                         className={cn(
                           "flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
                           isActive && "bg-accent text-accent-foreground font-medium"
