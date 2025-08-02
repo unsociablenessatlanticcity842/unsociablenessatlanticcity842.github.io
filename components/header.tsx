@@ -62,8 +62,7 @@ export function Header({ categories, tags }: HeaderProps) {
                   {categories.map((category) => {
                     const categoryDescriptions: Record<string, string> = {
                       Frontend: "React, Next.js, TypeScript 등 프론트엔드 개발",
-                      Backend: "Node.js, API, 데이터베이스 관련 개발",
-                      DevOps: "CI/CD, Docker, 클라우드 인프라 관련",
+                      DevOps: "CI/CD, Docker, 클라우드 인프라 관련"
                       // 다른 카테고리에 대한 설명을 여기에 추가
                     }
                     
@@ -97,7 +96,7 @@ export function Header({ categories, tags }: HeaderProps) {
             <NavigationMenuItem>
               <Link href="/about" legacyBehavior passHref>
                 <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                  About
+                  About Me
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>

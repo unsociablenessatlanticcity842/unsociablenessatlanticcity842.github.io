@@ -2,6 +2,7 @@ import Link from "next/link"
 import { getAllPosts } from "@/lib/mdx"
 import { PostCard } from "@/components/post-card"
 import { Button } from "@/components/ui/button"
+import { SearchLink } from "@/components/search-link"
 import { ArrowRight } from "lucide-react"
 
 export default function HomePage() {
@@ -26,6 +27,7 @@ export default function HomePage() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
+          <SearchLink showShortcut={true} enableKeyboardNavigation={true} />
           <Link href="/about">
             <Button size="lg" variant="outline">
               About Me
