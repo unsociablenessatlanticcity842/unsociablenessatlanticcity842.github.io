@@ -1,0 +1,610 @@
+---
+title: "Docker로 Laravel & PHP 완벽한 개발 환경 구축하기"
+date: "2025-08-03"
+description: "Nginx, PHP-FPM, MySQL, Redis를 조합한 프로덕션급 Laravel 개발 환경을 Docker로 구축하는 방법을 상세히 알아봅니다"
+tags: ["Docker", "Laravel", "PHP", "Nginx", "DevOps"]
+category: "DevOps"
+series: "Docker 완벽 가이드"
+seriesOrder: 7
+---
+
+# Part 7: Docker로 Laravel & PHP 완벽한 개발 환경 구축하기
+
+Laravel은 현대적인 PHP 프레임워크로, 복잡한 웹 애플리케이션을 우아하게 개발할 수 있게 해줍니다. 하지만 Laravel 프로젝트를 위한 개발 환경 구성은 복잡할 수 있습니다. 이번 포스트에서는 Docker를 활용해 프로덕션급 Laravel 개발 환경을 구축하는 방법을 알아보겠습니다.
+
+## Laravel 스택 이해하기
+
+Laravel 애플리케이션을 위한 전형적인 스택 구성:
+
+- **Nginx**: 웹 서버 및 리버스 프록시
+- **PHP-FPM**: PHP FastCGI Process Manager
+- **MySQL**: 관계형 데이터베이스
+- **Redis**: 캐시 및 세션 저장소
+- **Composer**: PHP 의존성 관리자
+- **Artisan**: Laravel 명령줄 도구
+
+## 프로젝트 구조 설계
+
+```
+laravel-docker/
+├── docker/
+│   ├── nginx/
+│   │   ├── Dockerfile
+│   │   └── nginx.conf
+│   ├── php/
+│   │   ├── Dockerfile
+│   │   └── php.ini
+│   └── mysql/
+│       └── my.cnf
+├── src/                    # Laravel 소스 코드
+├── docker-compose.yml
+├── docker-compose.prod.yml
+└── .env.example
+```
+
+## Step 1: Nginx 설정
+
+### nginx/Dockerfile
+```dockerfile
+FROM nginx:alpine
+
+# 설정 파일 복사
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 로그 디렉토리 생성
+RUN mkdir -p /var/log/nginx
+
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/nginx-health || exit 1
+```
+
+### nginx/nginx.conf
+```nginx
+server {
+    listen 80;
+    server_name localhost;
+    root /var/www/html/public;
+    index index.php index.html;
+
+    # 로그 설정
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    # 최대 업로드 크기
+    client_max_body_size 100M;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # PHP 처리
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        
+        # 버퍼 크기 설정
+        fastcgi_buffer_size 32k;
+        fastcgi_buffers 4 32k;
+    }
+
+    # 정적 파일 캐싱
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # .으로 시작하는 파일 접근 차단
+    location ~ /\. {
+        deny all;
+    }
+
+    # 헬스체크 엔드포인트
+    location /nginx-health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+}
+```
+
+## Step 2: PHP-FPM 설정
+
+### php/Dockerfile
+```dockerfile
+FROM php:8.1-fpm-alpine
+
+# 필수 확장 설치
+RUN apk add --no-cache \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    oniguruma-dev \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+    && docker-php-ext-install \
+        pdo \
+        pdo_mysql \
+        gd \
+        zip \
+        bcmath \
+        opcache \
+        mbstring
+
+# Redis 확장 설치
+RUN apk add --no-cache $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis
+
+# Composer 설치
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# 사용자 설정
+RUN addgroup -g 1000 laravel && \
+    adduser -u 1000 -G laravel -s /bin/sh -D laravel
+
+# PHP 설정
+COPY php.ini /usr/local/etc/php/conf.d/custom.ini
+
+# 작업 디렉토리
+WORKDIR /var/www/html
+
+# 권한 설정
+RUN chown -R laravel:laravel /var/www/html
+
+USER laravel
+```
+
+### php/php.ini
+```ini
+; 메모리 제한
+memory_limit = 256M
+
+; 업로드 크기
+upload_max_filesize = 100M
+post_max_size = 100M
+
+; 시간대
+date.timezone = Asia/Seoul
+
+; 에러 설정
+display_errors = Off
+log_errors = On
+error_log = /var/log/php/error.log
+
+; OPCache 설정 (프로덕션)
+opcache.enable = 1
+opcache.memory_consumption = 256
+opcache.max_accelerated_files = 20000
+opcache.validate_timestamps = 0
+opcache.revalidate_freq = 0
+
+; 개발 환경에서는 OPCache 비활성화
+; opcache.enable = 0
+```
+
+## Step 3: Docker Compose 구성
+
+### docker-compose.yml (개발용)
+```yaml
+version: '3.8'
+
+services:
+  # Nginx 웹 서버
+  nginx:
+    build:
+      context: ./docker/nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - laravel
+
+  # PHP-FPM
+  php:
+    build:
+      context: ./docker/php
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-laravel}
+      - DB_USERNAME=${DB_USERNAME:-laravel}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - laravel
+
+  # MySQL 데이터베이스
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - laravel
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis 캐시
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - laravel
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Composer 유틸리티
+  composer:
+    build:
+      context: ./docker/php
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: composer
+    networks:
+      - laravel
+
+  # Artisan 유틸리티
+  artisan:
+    build:
+      context: ./docker/php
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: php artisan
+    networks:
+      - laravel
+
+  # Node.js (프론트엔드 빌드용)
+  npm:
+    image: node:16-alpine
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: npm
+    networks:
+      - laravel
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  laravel:
+    driver: bridge
+```
+
+## Step 4: Laravel 프로젝트 설정
+
+### 새 Laravel 프로젝트 생성
+```bash
+# Composer로 Laravel 설치
+docker-compose run --rm composer create-project laravel/laravel .
+
+# 권한 설정
+sudo chown -R $USER:$USER src/
+chmod -R 755 src/
+chmod -R 777 src/storage src/bootstrap/cache
+```
+
+### 환경 설정 (.env)
+```bash
+# src/.env
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD=secret
+
+REDIS_HOST=redis
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+```
+
+### 초기 설정 실행
+```bash
+# 애플리케이션 키 생성
+docker-compose run --rm artisan key:generate
+
+# 데이터베이스 마이그레이션
+docker-compose run --rm artisan migrate
+
+# 캐시 정리
+docker-compose run --rm artisan config:cache
+docker-compose run --rm artisan route:cache
+docker-compose run --rm artisan view:cache
+```
+
+## Step 5: 개발 워크플로우
+
+### 일반적인 개발 명령어
+
+```bash
+# 서비스 시작
+docker-compose up -d
+
+# 로그 확인
+docker-compose logs -f php
+
+# Composer 패키지 설치
+docker-compose run --rm composer require laravel/sanctum
+
+# 마이그레이션 생성 및 실행
+docker-compose run --rm artisan make:migration create_posts_table
+docker-compose run --rm artisan migrate
+
+# 모델 생성
+docker-compose run --rm artisan make:model Post -mc
+
+# 컨트롤러 생성
+docker-compose run --rm artisan make:controller PostController --resource
+
+# 프론트엔드 에셋 빌드
+docker-compose run --rm npm install
+docker-compose run --rm npm run dev
+```
+
+### 큐 워커 실행
+```yaml
+# docker-compose.yml에 추가
+queue:
+  build:
+    context: ./docker/php
+  volumes:
+    - ./src:/var/www/html
+  command: php artisan queue:work --sleep=3 --tries=3
+  restart: unless-stopped
+  networks:
+    - laravel
+```
+
+### 스케줄러 실행
+```yaml
+# docker-compose.yml에 추가
+scheduler:
+  build:
+    context: ./docker/php
+  volumes:
+    - ./src:/var/www/html
+  command: >
+    sh -c "while true; do
+      php artisan schedule:run --verbose --no-interaction &
+      sleep 60
+    done"
+  networks:
+    - laravel
+```
+
+## Step 6: 프로덕션 최적화
+
+### docker-compose.prod.yml
+```yaml
+version: '3.8'
+
+services:
+  nginx:
+    restart: always
+    volumes:
+      # 소스 코드는 이미지에 포함
+      - ./src/public:/var/www/html/public:ro
+      - ./src/storage/app/public:/var/www/html/storage:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile.prod
+    restart: always
+    volumes:
+      # 쓰기가 필요한 디렉토리만 마운트
+      - ./src/storage:/var/www/html/storage
+      - ./src/bootstrap/cache:/var/www/html/bootstrap/cache
+    environment:
+      APP_ENV: production
+      APP_DEBUG: false
+
+  mysql:
+    restart: always
+    ports: []  # 외부 포트 노출 제거
+
+  redis:
+    restart: always
+    ports: []  # 외부 포트 노출 제거
+```
+
+### php/Dockerfile.prod
+```dockerfile
+FROM php:8.1-fpm-alpine AS base
+
+# 확장 설치 (개발과 동일)
+# ...
+
+FROM base AS build
+
+WORKDIR /var/www/html
+
+# Composer 설치
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# 의존성 설치
+COPY src/composer.json src/composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader
+
+# 소스 코드 복사
+COPY src/ .
+
+# Autoloader 최적화
+RUN composer dump-autoload --optimize --no-dev
+
+# 권한 설정
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+FROM base AS production
+
+# 빌드 단계에서 복사
+COPY --from=build --chown=www-data:www-data /var/www/html /var/www/html
+
+# OPCache 프리로딩 (PHP 7.4+)
+# RUN echo "opcache.preload=/var/www/html/preload.php" >> /usr/local/etc/php/conf.d/opcache.ini
+
+USER www-data
+
+EXPOSE 9000
+```
+
+## 성능 최적화 팁
+
+### 1. OPCache 설정
+```ini
+; 프로덕션 OPCache 설정
+opcache.enable=1
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=16
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0
+opcache.save_comments=1
+opcache.fast_shutdown=1
+```
+
+### 2. MySQL 튜닝
+```ini
+# docker/mysql/my.cnf
+[mysqld]
+innodb_buffer_pool_size = 1G
+innodb_log_file_size = 256M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+query_cache_type = 1
+query_cache_size = 128M
+```
+
+### 3. Redis 설정
+```bash
+# Redis 영속성 설정
+redis:
+  command: redis-server --appendonly yes --appendfsync everysec
+```
+
+## 트러블슈팅
+
+### 1. 권한 문제
+```bash
+# 컨테이너 내부에서 실행
+docker-compose exec php chown -R www-data:www-data storage bootstrap/cache
+```
+
+### 2. 느린 파일 시스템 (macOS)
+```yaml
+volumes:
+  # :delegated 옵션 추가
+  - ./src:/var/www/html:delegated
+```
+
+### 3. 메모리 부족
+```yaml
+# docker-compose.yml
+services:
+  mysql:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+```
+
+## 유용한 스크립트
+
+### Makefile
+```makefile
+.PHONY: up down build fresh test
+
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down
+
+build:
+	docker-compose build
+
+fresh:
+	docker-compose run --rm artisan migrate:fresh --seed
+
+test:
+	docker-compose run --rm php ./vendor/bin/phpunit
+
+shell:
+	docker-compose exec php sh
+
+logs:
+	docker-compose logs -f
+
+# 프로덕션 배포
+deploy:
+	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+## 마무리
+
+Docker를 활용한 Laravel 개발 환경 구축은 처음에는 복잡해 보일 수 있지만, 한 번 설정하면 다음과 같은 이점을 얻을 수 있습니다:
+
+1. **일관된 개발 환경**: 모든 팀원이 동일한 환경에서 작업
+2. **쉬운 온보딩**: 새 개발자도 바로 개발 시작 가능
+3. **프로덕션 유사성**: 개발 환경이 프로덕션과 거의 동일
+4. **확장성**: 필요에 따라 서비스 추가/제거 용이
+
+다음 포스트에서는 이렇게 구축한 컨테이너를 실제 **프로덕션 환경에 배포**하는 방법을 알아보겠습니다. AWS ECS, 멀티 스테이지 빌드, CI/CD 파이프라인 구축까지 다룰 예정입니다!
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Part 6: 유틸리티 컨테이너](/posts/docker-utility-containers)
+- → 다음: [Part 8: 컨테이너 배포 전략](/posts/docker-deployment-production)

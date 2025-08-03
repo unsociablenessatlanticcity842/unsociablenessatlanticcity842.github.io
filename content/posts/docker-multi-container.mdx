@@ -1,0 +1,524 @@
+---
+title: "Docker 다중 컨테이너 애플리케이션 구축하기"
+date: "2025-08-03"
+description: "실제 프로덕션 환경과 같은 다중 컨테이너 애플리케이션을 Docker로 구축하는 방법을 React, Node.js, MongoDB를 활용한 실전 예제로 알아봅니다"
+tags: ["Docker", "Multi-Container", "Microservices", "DevOps"]
+category: "DevOps"
+series: "Docker 완벽 가이드"
+seriesOrder: 4
+---
+
+# Part 4: Docker 다중 컨테이너 애플리케이션 구축하기
+
+이제까지 배운 Docker의 기본 개념들을 활용해 실제 프로덕션 환경에서 사용할 수 있는 다중 컨테이너 애플리케이션을 구축해보겠습니다. 이번 포스트에서는 React 프론트엔드, Node.js 백엔드, MongoDB 데이터베이스로 구성된 3-Tier 애플리케이션을 단계별로 만들어보며 실전 경험을 쌓아보겠습니다.
+
+## 프로젝트 개요
+
+우리가 만들 애플리케이션은 목표(Goals)를 관리하는 웹 애플리케이션입니다.
+
+### 아키텍처 구성
+- **Frontend**: React 기반 SPA (Single Page Application)
+- **Backend**: Node.js + Express REST API
+- **Database**: MongoDB
+- **Storage**: 볼륨을 활용한 데이터 영속성
+
+### 프로젝트 구조
+```
+goals-app/
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── Dockerfile
+├── backend/
+│   ├── models/
+│   ├── routes/
+│   ├── app.js
+│   ├── package.json
+│   └── Dockerfile
+└── docker-compose.yml
+```
+
+## Step 1: MongoDB 컨테이너 설정
+
+먼저 데이터베이스부터 설정하겠습니다. MongoDB는 인증이 필요하므로 환경 변수로 관리자 계정을 설정합니다.
+
+```bash
+# 네트워크 생성
+docker network create goals-net
+
+# MongoDB 실행
+docker run -d --name mongodb \
+  -v goals-data:/data/db \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=secret \
+  --network goals-net \
+  mongo
+```
+
+### MongoDB 인증 문제 해결
+
+MongoDB 6.0 이상 버전에서는 인증이 필수입니다. 연결 문자열에 `authSource=admin`을 추가해야 합니다:
+
+```javascript
+// backend/app.js
+const mongoUrl = `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@mongodb:27017/goals?authSource=admin`;
+
+mongoose.connect(mongoUrl, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+```
+
+## Step 2: Node.js 백엔드 설정
+
+### Dockerfile 작성
+```dockerfile
+# backend/Dockerfile
+FROM node:16-alpine
+
+WORKDIR /app
+
+# 의존성 파일 먼저 복사 (캐시 최적화)
+COPY package*.json ./
+RUN npm ci --only=production
+
+# 소스 코드 복사
+COPY . .
+
+EXPOSE 80
+
+CMD ["node", "app.js"]
+```
+
+### 백엔드 애플리케이션 코드
+```javascript
+// backend/app.js
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+
+const app = express();
+
+// CORS 설정 (프론트엔드와 통신)
+app.use(cors());
+app.use(express.json());
+
+// MongoDB 연결
+const connectDB = async () => {
+  try {
+    await mongoose.connect(
+      `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@mongodb:27017/goals?authSource=admin`,
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
+    );
+    console.log('MongoDB 연결 성공!');
+  } catch (err) {
+    console.error('MongoDB 연결 실패:', err);
+    process.exit(1);
+  }
+};
+
+// Goal 모델
+const Goal = mongoose.model('Goal', {
+  text: { type: String, required: true }
+});
+
+// API 라우트
+app.get('/goals', async (req, res) => {
+  try {
+    const goals = await Goal.find();
+    res.json({ goals });
+  } catch (err) {
+    res.status(500).json({ message: '목표를 가져올 수 없습니다.' });
+  }
+});
+
+app.post('/goals', async (req, res) => {
+  try {
+    const goal = new Goal({ text: req.body.text });
+    await goal.save();
+    res.status(201).json({ goal });
+  } catch (err) {
+    res.status(500).json({ message: '목표를 추가할 수 없습니다.' });
+  }
+});
+
+app.delete('/goals/:id', async (req, res) => {
+  try {
+    await Goal.findByIdAndDelete(req.params.id);
+    res.json({ message: '목표가 삭제되었습니다.' });
+  } catch (err) {
+    res.status(500).json({ message: '목표를 삭제할 수 없습니다.' });
+  }
+});
+
+// 서버 시작
+connectDB().then(() => {
+  app.listen(80, () => {
+    console.log('백엔드 서버가 80번 포트에서 실행 중입니다.');
+  });
+});
+```
+
+### 백엔드 컨테이너 실행
+```bash
+# 이미지 빌드
+docker build -t goals-backend ./backend
+
+# 컨테이너 실행 (개발 모드)
+docker run -d --name goals-backend \
+  -v $(pwd)/backend:/app \
+  -v /app/node_modules \
+  -e MONGODB_USERNAME=admin \
+  -e MONGODB_PASSWORD=secret \
+  --network goals-net \
+  -p 80:80 \
+  goals-backend
+```
+
+## Step 3: React 프론트엔드 설정
+
+### Dockerfile 작성
+```dockerfile
+# frontend/Dockerfile
+FROM node:16-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+```
+
+### 프론트엔드 애플리케이션 코드
+```javascript
+// frontend/src/App.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import './App.css';
+
+function App() {
+  const [goals, setGoals] = useState([]);
+  const [newGoal, setNewGoal] = useState('');
+
+  // 백엔드 URL (환경 변수로 설정 가능)
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost';
+
+  useEffect(() => {
+    fetchGoals();
+  }, []);
+
+  const fetchGoals = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/goals`);
+      setGoals(response.data.goals);
+    } catch (error) {
+      console.error('목표를 가져오는데 실패했습니다:', error);
+    }
+  };
+
+  const addGoal = async (e) => {
+    e.preventDefault();
+    if (!newGoal.trim()) return;
+
+    try {
+      await axios.post(`${API_URL}/goals`, { text: newGoal });
+      setNewGoal('');
+      fetchGoals();
+    } catch (error) {
+      console.error('목표 추가에 실패했습니다:', error);
+    }
+  };
+
+  const deleteGoal = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/goals/${id}`);
+      fetchGoals();
+    } catch (error) {
+      console.error('목표 삭제에 실패했습니다:', error);
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>나의 목표 관리</h1>
+      
+      <form onSubmit={addGoal}>
+        <input
+          type="text"
+          value={newGoal}
+          onChange={(e) => setNewGoal(e.target.value)}
+          placeholder="새로운 목표를 입력하세요"
+        />
+        <button type="submit">추가</button>
+      </form>
+
+      <ul className="goals-list">
+        {goals.map((goal) => (
+          <li key={goal._id}>
+            <span>{goal.text}</span>
+            <button onClick={() => deleteGoal(goal._id)}>삭제</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+### 프론트엔드 컨테이너 실행
+```bash
+# 이미지 빌드
+docker build -t goals-frontend ./frontend
+
+# 컨테이너 실행 (개발 모드)
+docker run -d --name goals-frontend \
+  -v $(pwd)/frontend/src:/app/src \
+  -e REACT_APP_API_URL=http://localhost \
+  --network goals-net \
+  -p 3000:3000 \
+  goals-frontend
+```
+
+## Step 4: 개발 환경 최적화
+
+### 문제점들과 해결 방법
+
+#### 1. 라이브 리로딩 설정
+React 개발 서버는 기본적으로 파일 변경을 감지하지만, Docker 환경에서는 추가 설정이 필요할 수 있습니다.
+
+```javascript
+// frontend/package.json
+{
+  "scripts": {
+    "start": "WATCHPACK_POLLING=true react-scripts start"
+  }
+}
+```
+
+#### 2. 백엔드 자동 재시작 (Nodemon)
+```javascript
+// backend/package.json
+{
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon -L app.js"  // -L은 polling 모드
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  }
+}
+```
+
+```dockerfile
+# backend/Dockerfile.dev
+FROM node:16-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "run", "dev"]
+```
+
+#### 3. 로그 관리
+```bash
+# 백엔드에 로그 볼륨 추가
+docker run -d --name goals-backend \
+  -v $(pwd)/backend:/app \
+  -v logs:/app/logs \
+  -v /app/node_modules \
+  # ... 기타 옵션
+```
+
+## Step 5: 전체 스택 실행 스크립트
+
+모든 컨테이너를 수동으로 관리하는 것은 번거롭습니다. 스크립트로 자동화해봅시다.
+
+### start.sh
+```bash
+#!/bin/bash
+
+echo "🚀 Goals 애플리케이션 시작..."
+
+# 네트워크 생성
+docker network create goals-net 2>/dev/null
+
+# MongoDB 시작
+echo "📦 MongoDB 시작..."
+docker run -d --name mongodb \
+  -v goals-data:/data/db \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=secret \
+  --network goals-net \
+  mongo
+
+# MongoDB가 준비될 때까지 대기
+echo "⏳ MongoDB 초기화 대기..."
+sleep 5
+
+# 백엔드 시작
+echo "🔧 백엔드 서버 시작..."
+docker build -t goals-backend ./backend
+docker run -d --name goals-backend \
+  -v $(pwd)/backend:/app \
+  -v /app/node_modules \
+  -e MONGODB_USERNAME=admin \
+  -e MONGODB_PASSWORD=secret \
+  --network goals-net \
+  -p 80:80 \
+  goals-backend
+
+# 프론트엔드 시작
+echo "🎨 프론트엔드 시작..."
+docker build -t goals-frontend ./frontend
+docker run -d --name goals-frontend \
+  -v $(pwd)/frontend/src:/app/src \
+  -e REACT_APP_API_URL=http://localhost \
+  -p 3000:3000 \
+  goals-frontend
+
+echo "✅ 모든 서비스가 시작되었습니다!"
+echo "프론트엔드: http://localhost:3000"
+echo "백엔드 API: http://localhost"
+```
+
+### stop.sh
+```bash
+#!/bin/bash
+
+echo "🛑 Goals 애플리케이션 종료..."
+
+# 컨테이너 중지 및 제거
+docker stop goals-frontend goals-backend mongodb
+docker rm goals-frontend goals-backend mongodb
+
+# 네트워크 제거
+docker network rm goals-net
+
+echo "✅ 모든 서비스가 종료되었습니다."
+```
+
+## 프로덕션 고려사항
+
+### 1. 환경 분리
+```javascript
+// backend/config.js
+module.exports = {
+  development: {
+    mongoUri: 'mongodb://admin:secret@mongodb:27017/goals-dev?authSource=admin',
+    port: 80,
+    cors: {
+      origin: 'http://localhost:3000'
+    }
+  },
+  production: {
+    mongoUri: process.env.MONGODB_URI,
+    port: process.env.PORT || 80,
+    cors: {
+      origin: process.env.FRONTEND_URL
+    }
+  }
+};
+```
+
+### 2. 보안 강화
+```dockerfile
+# 프로덕션 Dockerfile
+FROM node:16-alpine
+
+# 보안을 위한 non-root 사용자
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+
+WORKDIR /app
+
+COPY --chown=nodejs:nodejs package*.json ./
+RUN npm ci --only=production
+
+COPY --chown=nodejs:nodejs . .
+
+USER nodejs
+
+EXPOSE 80
+
+CMD ["node", "app.js"]
+```
+
+### 3. 헬스 체크 추가
+```javascript
+// backend/app.js
+app.get('/health', async (req, res) => {
+  try {
+    // MongoDB 연결 상태 확인
+    const dbState = mongoose.connection.readyState;
+    const isHealthy = dbState === 1;
+    
+    res.status(isHealthy ? 200 : 503).json({
+      status: isHealthy ? 'healthy' : 'unhealthy',
+      database: dbState === 1 ? 'connected' : 'disconnected',
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    res.status(503).json({ status: 'error', message: error.message });
+  }
+});
+```
+
+## 트러블슈팅
+
+### 1. CORS 에러
+```javascript
+// backend/app.js
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
+```
+
+### 2. MongoDB 연결 실패
+```bash
+# MongoDB 로그 확인
+docker logs mongodb
+
+# 연결 테스트
+docker exec -it goals-backend ping mongodb
+```
+
+### 3. 네트워크 통신 문제
+```bash
+# 네트워크 상태 확인
+docker network inspect goals-net
+
+# 컨테이너 간 통신 테스트
+docker exec -it goals-backend curl http://mongodb:27017
+```
+
+## 모범 사례 정리
+
+1. **네트워크 격리**: 커스텀 네트워크로 컨테이너 간 안전한 통신
+2. **데이터 영속성**: 데이터베이스는 명명된 볼륨 사용
+3. **개발 편의성**: 소스 코드는 바인드 마운트로 실시간 반영
+4. **보안**: 환경 변수로 민감한 정보 관리
+5. **의존성 관리**: 각 서비스의 의존성을 독립적으로 관리
+
+## 마무리
+
+이번 포스트에서는 실제 애플리케이션과 같은 다중 컨테이너 환경을 구축해보았습니다. 하지만 각 컨테이너를 수동으로 관리하는 것은 여전히 번거롭습니다. 
+
+다음 포스트에서는 이러한 복잡한 다중 컨테이너 환경을 **Docker Compose**로 간단하게 관리하는 방법을 알아보겠습니다. YAML 파일 하나로 전체 스택을 정의하고 관리하는 마법 같은 도구를 만나보세요!
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Part 3: Docker 네트워킹](/posts/docker-networking)
+- → 다음: [Part 5: Docker Compose](/posts/docker-compose-orchestration)

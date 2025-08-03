@@ -1,0 +1,509 @@
+---
+title: "Docker 유틸리티 컨테이너로 개발 환경 혁신하기"
+date: "2025-08-03"
+description: "로컬에 개발 도구를 설치하지 않고 Docker 컨테이너로 npm, composer, artisan 등을 실행하는 유틸리티 컨테이너 패턴을 알아봅니다"
+tags: ["Docker", "Utility Container", "Development", "DevOps"]
+category: "DevOps"
+series: "Docker 완벽 가이드"
+seriesOrder: 6
+---
+
+# Part 6: Docker 유틸리티 컨테이너로 개발 환경 혁신하기
+
+개발자라면 누구나 이런 경험이 있을 것입니다. 프로젝트마다 다른 Node.js 버전, Python 버전, PHP 버전... 로컬 환경이 점점 복잡해지고 충돌이 발생합니다. **유틸리티 컨테이너**는 이런 문제를 우아하게 해결해줍니다.
+
+## 유틸리티 컨테이너란?
+
+유틸리티 컨테이너는 애플리케이션을 실행하는 대신 **개발 도구를 실행**하는 것이 목적인 컨테이너입니다. 
+
+### 주요 장점
+- **환경 독립성**: 로컬 시스템에 도구 설치 불필요
+- **버전 관리**: 프로젝트별로 다른 도구 버전 사용 가능
+- **팀 일관성**: 모든 팀원이 동일한 개발 환경 사용
+- **빠른 온보딩**: 신규 개발자도 즉시 개발 시작 가능
+
+## 기본 개념 이해하기
+
+### 일반 컨테이너 vs 유틸리티 컨테이너
+
+```dockerfile
+# 일반 애플리케이션 컨테이너
+FROM node:16
+WORKDIR /app
+COPY . .
+RUN npm install
+CMD ["node", "server.js"]  # 고정된 명령
+```
+
+```dockerfile
+# 유틸리티 컨테이너
+FROM node:16-alpine
+WORKDIR /app
+# CMD 없음 - 실행 시 명령 지정
+```
+
+핵심 차이점은 **유연성**입니다. 유틸리티 컨테이너는 실행할 명령을 런타임에 지정합니다.
+
+## 실전 예제: Node.js 유틸리티 컨테이너
+
+### Step 1: 기본 유틸리티 컨테이너 생성
+
+```dockerfile
+# node-util/Dockerfile
+FROM node:16-alpine
+WORKDIR /app
+```
+
+```bash
+# 이미지 빌드
+docker build -t node-util ./node-util
+```
+
+### Step 2: 다양한 명령 실행
+
+```bash
+# 프로젝트 초기화
+docker run -it --rm -v $(pwd):/app node-util npm init
+
+# 패키지 설치
+docker run -it --rm -v $(pwd):/app node-util npm install express
+
+# 스크립트 실행
+docker run -it --rm -v $(pwd):/app node-util npm test
+
+# Node.js 버전 확인
+docker run -it --rm node-util node --version
+```
+
+### 옵션 설명
+- `-it`: 인터랙티브 모드 (사용자 입력 필요 시)
+- `--rm`: 실행 후 컨테이너 자동 삭제
+- `-v $(pwd):/app`: 현재 디렉토리를 컨테이너에 마운트
+
+## ENTRYPOINT vs CMD 활용
+
+### ENTRYPOINT로 기본 명령 고정
+
+특정 도구를 위한 전용 컨테이너를 만들 수 있습니다:
+
+```dockerfile
+# npm-util/Dockerfile
+FROM node:16-alpine
+WORKDIR /app
+ENTRYPOINT ["npm"]
+```
+
+```bash
+# 사용법이 더 간단해집니다
+docker run --rm -v $(pwd):/app npm-util install
+docker run --rm -v $(pwd):/app npm-util test
+docker run --rm -v $(pwd):/app npm-util run build
+```
+
+### 유연한 ENTRYPOINT 설정
+
+```dockerfile
+# Dockerfile
+FROM node:16-alpine
+WORKDIR /app
+COPY docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
+```
+
+```bash
+# docker-entrypoint.sh
+#!/bin/sh
+if [ "$1" = "npm" ] || [ "$1" = "node" ] || [ "$1" = "npx" ]; then
+    exec "$@"
+else
+    exec npm "$@"
+fi
+```
+
+## Docker Compose와 함께 사용하기
+
+### docker-compose.yml 설정
+
+```yaml
+version: '3.8'
+
+services:
+  # 애플리케이션 서비스
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+
+  # Node.js 유틸리티
+  npm:
+    image: node:16-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    entrypoint: npm
+
+  # TypeScript 컴파일러
+  tsc:
+    image: node:16-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    entrypoint: npx
+    command: tsc
+
+  # 테스트 러너
+  test:
+    image: node:16-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    entrypoint: npm
+    command: test
+```
+
+### 사용 예시
+
+```bash
+# npm 명령 실행
+docker-compose run --rm npm install axios
+
+# TypeScript 컴파일
+docker-compose run --rm tsc --watch
+
+# 테스트 실행
+docker-compose run --rm test
+
+# 커스텀 스크립트 실행
+docker-compose run --rm npm run lint
+```
+
+## 권한 문제 해결하기
+
+Linux에서는 컨테이너 내부의 root 사용자가 파일을 생성하면 권한 문제가 발생할 수 있습니다.
+
+### 문제 상황
+
+```bash
+# 컨테이너로 파일 생성
+docker run --rm -v $(pwd):/app node-util npm init -y
+
+# 권한 확인
+ls -la package.json
+# -rw-r--r-- 1 root root 245 Nov 20 10:00 package.json
+```
+
+### 해결 방법 1: 사용자 ID 매칭
+
+```bash
+# 현재 사용자 ID로 실행
+docker run --rm \
+  -v $(pwd):/app \
+  --user $(id -u):$(id -g) \
+  node-util npm init -y
+```
+
+### 해결 방법 2: Dockerfile에서 사용자 설정
+
+```dockerfile
+FROM node:16-alpine
+RUN addgroup -g 1000 node && \
+    adduser -u 1000 -G node -s /bin/sh -D node
+WORKDIR /app
+USER node
+```
+
+### 해결 방법 3: docker-compose.yml에서 설정
+
+```yaml
+services:
+  npm:
+    image: node:16-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    user: "${UID:-1000}:${GID:-1000}"
+    entrypoint: npm
+```
+
+```bash
+# 사용 시 UID/GID 전달
+UID=$(id -u) GID=$(id -g) docker-compose run --rm npm install
+```
+
+## 실전 프로젝트 예제
+
+### 1. Python 프로젝트
+
+```dockerfile
+# python-util/Dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+```
+
+```yaml
+# docker-compose.yml
+services:
+  python:
+    build: ./python-util
+    volumes:
+      - ./:/app
+    working_dir: /app
+
+  pip:
+    build: ./python-util
+    volumes:
+      - ./:/app
+    entrypoint: pip
+
+  pytest:
+    build: ./python-util
+    volumes:
+      - ./:/app
+    entrypoint: pytest
+
+  django:
+    build: ./python-util
+    volumes:
+      - ./:/app
+    entrypoint: python
+    command: manage.py
+```
+
+사용 예시:
+```bash
+# Django 프로젝트 생성
+docker-compose run --rm django startproject myproject .
+
+# 마이그레이션
+docker-compose run --rm django migrate
+
+# 테스트 실행
+docker-compose run --rm pytest
+
+# 패키지 설치
+docker-compose run --rm pip install django-rest-framework
+```
+
+### 2. Laravel/PHP 프로젝트
+
+```dockerfile
+# composer/Dockerfile
+FROM composer:2
+WORKDIR /app
+```
+
+```yaml
+# docker-compose.yml
+services:
+  composer:
+    image: composer:2
+    volumes:
+      - ./:/app
+    working_dir: /app
+
+  artisan:
+    build: ./php
+    volumes:
+      - ./:/app
+    working_dir: /app
+    entrypoint: php
+    command: artisan
+
+  phpunit:
+    build: ./php
+    volumes:
+      - ./:/app
+    working_dir: /app
+    entrypoint: ./vendor/bin/phpunit
+```
+
+사용 예시:
+```bash
+# Laravel 프로젝트 생성
+docker-compose run --rm composer create-project laravel/laravel .
+
+# 의존성 설치
+docker-compose run --rm composer install
+
+# Artisan 명령
+docker-compose run --rm artisan migrate
+docker-compose run --rm artisan make:controller UserController
+
+# 테스트 실행
+docker-compose run --rm phpunit
+```
+
+## 고급 패턴
+
+### 1. 멀티 스테이지 유틸리티 컨테이너
+
+```dockerfile
+# 개발 도구가 포함된 베이스 이미지
+FROM node:16 AS dev-tools
+RUN npm install -g @angular/cli@12 \
+    @vue/cli@4 \
+    create-react-app \
+    typescript \
+    eslint \
+    prettier
+
+# 경량 유틸리티 이미지
+FROM node:16-alpine
+COPY --from=dev-tools /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/@angular/cli/bin/ng /usr/local/bin/ng && \
+    ln -s /usr/local/lib/node_modules/@vue/cli/bin/vue.js /usr/local/bin/vue && \
+    ln -s /usr/local/lib/node_modules/typescript/bin/tsc /usr/local/bin/tsc
+WORKDIR /app
+```
+
+### 2. 스크립트 래퍼 생성
+
+```bash
+#!/bin/bash
+# bin/npm
+docker-compose run --rm npm "$@"
+```
+
+```bash
+#!/bin/bash
+# bin/artisan
+docker-compose run --rm artisan "$@"
+```
+
+```bash
+# 실행 권한 부여
+chmod +x bin/*
+
+# 사용
+./bin/npm install
+./bin/artisan serve
+```
+
+### 3. Makefile 활용
+
+```makefile
+# Makefile
+.PHONY: install test build clean
+
+install:
+	docker-compose run --rm npm install
+
+test:
+	docker-compose run --rm npm test
+
+build:
+	docker-compose run --rm npm run build
+
+clean:
+	docker-compose down -v
+	rm -rf node_modules dist
+
+shell:
+	docker-compose run --rm app /bin/sh
+
+# Laravel 명령
+migrate:
+	docker-compose run --rm artisan migrate
+
+seed:
+	docker-compose run --rm artisan db:seed
+```
+
+## 팀 협업을 위한 문서화
+
+### README.md 예시
+
+```markdown
+# 프로젝트명
+
+## 시작하기
+
+이 프로젝트는 Docker 유틸리티 컨테이너를 사용합니다. 
+로컬에 Node.js를 설치할 필요가 없습니다!
+
+### 필수 요구사항
+- Docker
+- Docker Compose
+
+### 초기 설정
+\`\`\`bash
+# 의존성 설치
+docker-compose run --rm npm install
+
+# 환경 설정
+cp .env.example .env
+\`\`\`
+
+### 개발 서버 실행
+\`\`\`bash
+docker-compose up app
+\`\`\`
+
+### 사용 가능한 명령
+\`\`\`bash
+# 패키지 추가
+docker-compose run --rm npm install [package-name]
+
+# 테스트 실행
+docker-compose run --rm npm test
+
+# 린트 실행
+docker-compose run --rm npm run lint
+
+# 빌드
+docker-compose run --rm npm run build
+\`\`\`
+```
+
+## 문제 해결
+
+### 1. 볼륨 마운트 성능 (macOS)
+```yaml
+services:
+  npm:
+    volumes:
+      # delegated 옵션으로 성능 향상
+      - ./:/app:delegated
+```
+
+### 2. node_modules 충돌
+```yaml
+services:
+  app:
+    volumes:
+      - ./:/app
+      - /app/node_modules  # node_modules 제외
+```
+
+### 3. 캐시 활용
+```dockerfile
+FROM node:16-alpine
+WORKDIR /app
+# package.json만 먼저 복사하여 캐시 활용
+COPY package*.json ./
+RUN npm ci
+COPY . .
+```
+
+## 마무리
+
+유틸리티 컨테이너는 단순한 도구 이상의 가치를 제공합니다:
+
+1. **환경 독립성**: "내 컴퓨터에서는 되는데" 문제 해결
+2. **팀 일관성**: 모든 개발자가 동일한 도구 버전 사용
+3. **빠른 온보딩**: 신규 개발자도 즉시 개발 시작
+4. **깔끔한 로컬**: 로컬 시스템을 깨끗하게 유지
+
+다음 포스트에서는 실제 프로덕션 환경을 위한 **Laravel & PHP 스택**을 Docker로 구성하는 방법을 알아보겠습니다. Nginx, PHP-FPM, MySQL을 조합한 완벽한 개발 환경을 만들어보세요!
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Part 5: Docker Compose](/posts/docker-compose-orchestration)
+- → 다음: [Part 7: Laravel & PHP with Docker](/posts/docker-laravel-php)

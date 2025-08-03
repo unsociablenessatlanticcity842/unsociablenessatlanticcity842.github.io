@@ -1,0 +1,450 @@
+---
+title: "Docker 데이터 관리와 볼륨 완벽 가이드"
+date: "2025-08-03"
+description: "Docker 컨테이너의 데이터 지속성을 위한 볼륨 시스템을 완벽하게 이해하고, 개발과 프로덕션 환경에서 효과적으로 활용하는 방법을 알아봅니다"
+tags: ["Docker", "Volume", "Data Management", "DevOps"]
+category: "DevOps"
+series: "Docker 완벽 가이드"
+seriesOrder: 2
+---
+
+# Part 2: Docker 데이터 관리와 볼륨 완벽 가이드
+
+Docker 컨테이너의 가장 큰 특징 중 하나는 **일시성(Ephemeral)**입니다. 컨테이너를 삭제하면 그 안의 데이터도 함께 사라집니다. 이는 애플리케이션의 독립성을 보장하지만, 데이터베이스나 로그 파일처럼 영구적으로 보관해야 할 데이터에는 문제가 됩니다. 이번 포스트에서는 Docker의 볼륨 시스템을 통해 이 문제를 해결하는 방법을 자세히 알아보겠습니다.
+
+## 컨테이너 데이터의 휘발성 문제
+
+먼저 실제 예제를 통해 문제를 확인해보겠습니다.
+
+```javascript
+// feedback-app/server.js
+const express = require('express');
+const fs = require('fs').promises;
+const app = express();
+
+app.post('/feedback', async (req, res) => {
+  const { title, text } = req.body;
+  const fileName = title.toLowerCase().replace(/ /g, '-');
+  
+  await fs.writeFile(`./feedback/${fileName}.txt`, text);
+  res.send('Feedback saved!');
+});
+
+app.listen(80);
+```
+
+이 애플리케이션을 Docker화하고 실행해보면:
+
+```bash
+# 컨테이너 실행
+docker run -d --name feedback-app -p 3000:80 feedback:latest
+
+# 피드백 저장 (성공!)
+curl -X POST http://localhost:3000/feedback \
+  -d '{"title":"Great App", "text":"Love it!"}'
+
+# 컨테이너 재시작
+docker stop feedback-app
+docker rm feedback-app
+docker run -d --name feedback-app -p 3000:80 feedback:latest
+
+# 데이터 확인... 사라졌다! 😱
+```
+
+## Docker 볼륨의 3가지 유형
+
+Docker는 이 문제를 해결하기 위해 세 가지 유형의 볼륨을 제공합니다.
+
+### 1. 익명 볼륨 (Anonymous Volumes)
+
+익명 볼륨은 컨테이너에 임시로 연결되는 볼륨입니다.
+
+```bash
+# Dockerfile에서 설정
+VOLUME ["/app/feedback"]
+
+# 또는 실행 시 설정
+docker run -v /app/feedback feedback:latest
+```
+
+**특징:**
+- 컨테이너 삭제 시 함께 삭제됨
+- 주로 성능 최적화나 임시 데이터에 사용
+- 컨테이너 간 공유 불가
+
+### 2. 명명된 볼륨 (Named Volumes)
+
+명명된 볼륨은 Docker가 관리하는 영구적인 저장소입니다.
+
+```bash
+# 명명된 볼륨으로 실행
+docker run -d --name feedback-app \
+  -v feedback-data:/app/feedback \
+  -p 3000:80 \
+  feedback:latest
+```
+
+**특징:**
+- 컨테이너와 독립적으로 존재
+- 여러 컨테이너 간 공유 가능
+- Docker가 자동으로 관리
+- 프로덕션 환경에 적합
+
+### 3. 바인드 마운트 (Bind Mounts)
+
+바인드 마운트는 호스트 파일 시스템의 특정 경로를 컨테이너에 연결합니다.
+
+```bash
+# 바인드 마운트로 실행
+docker run -d --name feedback-app \
+  -v $(pwd):/app \
+  -p 3000:80 \
+  feedback:latest
+```
+
+**특징:**
+- 호스트 파일 시스템에 직접 접근
+- 실시간 코드 변경 반영 가능
+- 개발 환경에 최적
+
+## 볼륨 유형별 상세 비교
+
+| 특성 | 익명 볼륨 | 명명된 볼륨 | 바인드 마운트 |
+|------|----------|------------|--------------|
+| **생성 방법** | `-v /app/data` | `-v name:/app/data` | `-v /host/path:/app/data` |
+| **저장 위치** | Docker 관리 영역 | Docker 관리 영역 | 호스트 지정 경로 |
+| **생명 주기** | 컨테이너 종속 | 독립적 | 독립적 |
+| **공유 가능** | ❌ | ✅ | ✅ |
+| **호스트 접근** | 어려움 | 어려움 | 쉬움 |
+| **주 용도** | 임시 데이터 | 영구 데이터 | 개발 환경 |
+
+## 실전: 개발 환경 구성하기
+
+개발 환경에서는 코드 변경이 즉시 반영되어야 합니다. 이를 위한 완벽한 설정을 만들어보겠습니다.
+
+### 문제: node_modules 충돌
+
+바인드 마운트를 사용하면 흔히 겪는 문제가 있습니다:
+
+```bash
+# 전체 프로젝트를 마운트하면...
+docker run -v $(pwd):/app myapp
+
+# 에러 발생!
+# Error: Cannot find module 'express'
+```
+
+왜일까요? 호스트의 빈 `node_modules`가 컨테이너의 `node_modules`를 덮어쓰기 때문입니다.
+
+### 해결: 볼륨 우선순위 활용
+
+Docker는 더 구체적인 경로를 우선시합니다. 이를 활용해 문제를 해결할 수 있습니다:
+
+```bash
+docker run -d --name dev-app \
+  -v feedback:/app/feedback \      # 영구 데이터용 명명된 볼륨
+  -v $(pwd):/app \                 # 전체 코드 바인드 마운트
+  -v /app/node_modules \            # node_modules 보호용 익명 볼륨
+  -p 3000:80 \
+  myapp:dev
+```
+
+우선순위: `/app/node_modules` > `/app` > `/`
+
+### Node.js 개발을 위한 Nodemon 설정
+
+실시간 재시작을 위해 Nodemon을 설정합니다:
+
+```json
+// package.json
+{
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon -L server.js"  // -L은 polling 모드 (WSL2 필수)
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  }
+}
+```
+
+```dockerfile
+# Dockerfile
+FROM node:14
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "run", "dev"]  # 개발 모드로 실행
+```
+
+## 보안을 위한 읽기 전용 볼륨
+
+프로덕션 환경이나 보안이 중요한 경우, 읽기 전용 볼륨을 활용할 수 있습니다:
+
+```bash
+# 소스 코드는 읽기 전용으로
+docker run -d \
+  -v $(pwd)/src:/app/src:ro \      # :ro = read-only
+  -v logs:/app/logs \               # 로그는 쓰기 가능
+  -v temp:/app/temp \               # 임시 파일도 쓰기 가능
+  myapp:prod
+```
+
+이렇게 하면 컨테이너가 해킹되더라도 소스 코드를 변경할 수 없습니다.
+
+## .dockerignore로 불필요한 파일 제외
+
+`.dockerignore` 파일을 통해 이미지 빌드 시 불필요한 파일을 제외할 수 있습니다:
+
+```bash
+# .dockerignore
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.vscode
+.idea
+*.swp
+*.log
+Dockerfile
+.dockerignore
+```
+
+이렇게 하면:
+1. 이미지 크기 감소
+2. 빌드 속도 향상
+3. 보안 강화 (민감한 파일 제외)
+
+## 환경 변수와 빌드 인수 활용
+
+### ENV vs ARG 비교
+
+```dockerfile
+# ARG: 빌드 시점에만 사용
+ARG DEFAULT_PORT=80
+
+# ENV: 빌드 + 런타임 모두 사용
+ENV PORT=$DEFAULT_PORT
+ENV NODE_ENV=production
+
+# 사용 예시
+EXPOSE $PORT
+```
+
+### 실제 활용 예시
+
+```dockerfile
+# Dockerfile
+ARG NODE_VERSION=14
+FROM node:${NODE_VERSION}
+
+ARG DEFAULT_PORT=3000
+ENV PORT=$DEFAULT_PORT
+
+WORKDIR /app
+COPY . .
+RUN npm install
+CMD ["node", "server.js"]
+```
+
+```bash
+# 개발 환경 빌드
+docker build \
+  --build-arg NODE_VERSION=16 \
+  --build-arg DEFAULT_PORT=3000 \
+  -t myapp:dev .
+
+# 프로덕션 환경 빌드  
+docker build \
+  --build-arg NODE_VERSION=14-alpine \
+  --build-arg DEFAULT_PORT=80 \
+  -t myapp:prod .
+```
+
+### .env 파일 활용
+
+```bash
+# .env.development
+NODE_ENV=development
+DB_HOST=localhost
+DB_PORT=5432
+API_KEY=dev-key-12345
+
+# .env.production
+NODE_ENV=production
+DB_HOST=prod-db.example.com
+DB_PORT=5432
+API_KEY=prod-key-secure
+```
+
+```bash
+# 환경별 실행
+docker run --env-file .env.development myapp:dev
+docker run --env-file .env.production myapp:prod
+```
+
+## 볼륨 관리 명령어
+
+### 볼륨 조회 및 검사
+
+```bash
+# 모든 볼륨 목록
+docker volume ls
+
+# 특정 볼륨 상세 정보
+docker volume inspect feedback-data
+
+# 볼륨이 사용하는 실제 경로 확인
+docker volume inspect feedback-data --format '{{ .Mountpoint }}'
+```
+
+### 볼륨 정리
+
+```bash
+# 특정 볼륨 삭제
+docker volume rm feedback-data
+
+# 사용하지 않는 모든 볼륨 삭제
+docker volume prune
+
+# 강제 삭제 (주의!)
+docker volume prune -f
+```
+
+## 실전 예제: 풀스택 애플리케이션 설정
+
+실제 풀스택 애플리케이션의 볼륨 설정 예제를 살펴보겠습니다:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend/src:/app/src:ro  # 소스 코드 (읽기 전용)
+      - /app/node_modules            # 의존성 보호
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/app               # 전체 백엔드 코드
+      - /app/node_modules            # 의존성 보호
+      - logs:/app/logs               # 로그 영구 저장
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=database
+
+  database:
+    image: postgres:13
+    volumes:
+      - db-data:/var/lib/postgresql/data  # DB 데이터 영구 저장
+    environment:
+      - POSTGRES_PASSWORD=secret
+
+volumes:
+  logs:
+  db-data:
+```
+
+## 환경별 전략
+
+### 개발 환경
+```bash
+# 최대한의 유연성
+docker run -d \
+  -v $(pwd):/app \
+  -v /app/node_modules \
+  --env-file .env.dev \
+  myapp:dev
+```
+
+### 테스트 환경
+```bash
+# 프로덕션과 유사하되 테스트 데이터 사용
+docker run -d \
+  -v test-data:/app/data \
+  --env-file .env.test \
+  myapp:test
+```
+
+### 프로덕션 환경
+```bash
+# 최소 권한, 최대 보안
+docker run -d \
+  -v prod-data:/app/data \
+  -v prod-logs:/var/log/app \
+  --env-file .env.prod \
+  --read-only \
+  --tmpfs /tmp \
+  myapp:prod
+```
+
+## 트러블슈팅
+
+### 1. 권한 문제
+```bash
+# 문제: Permission denied
+# 해결: 사용자 매핑
+docker run --user $(id -u):$(id -g) -v $(pwd):/app myapp
+```
+
+### 2. 파일 변경 감지 안됨 (WSL2)
+```bash
+# 문제: Nodemon이 파일 변경을 감지하지 못함
+# 해결: polling 모드 사용
+nodemon -L server.js
+```
+
+### 3. Cross-device link 에러
+```javascript
+// 문제: fs.rename()이 다른 장치 간 작동 안함
+// 해결: copy + delete 사용
+const fs = require('fs').promises;
+
+// 잘못된 방법
+await fs.rename('/tmp/file', '/app/file');
+
+// 올바른 방법
+await fs.copyFile('/tmp/file', '/app/file');
+await fs.unlink('/tmp/file');
+```
+
+## 모범 사례 정리
+
+1. **용도에 맞는 볼륨 유형 선택**
+   - 개발: 바인드 마운트
+   - 프로덕션 데이터: 명명된 볼륨
+   - 임시 데이터: 익명 볼륨
+
+2. **보안 강화**
+   - 민감한 정보는 환경 변수로
+   - 필요시 읽기 전용 마운트 사용
+   - .dockerignore로 불필요한 파일 제외
+
+3. **성능 최적화**
+   - node_modules는 익명 볼륨으로 보호
+   - 빌드 캐시 활용을 위한 레이어 순서 최적화
+
+4. **데이터 관리**
+   - 정기적인 볼륨 백업
+   - 불필요한 볼륨 정리
+   - 볼륨 이름에 의미 부여
+
+## 마무리
+
+이번 포스트에서는 Docker의 데이터 관리와 볼륨 시스템에 대해 깊이 있게 다뤘습니다. 볼륨은 단순히 데이터를 저장하는 것 이상의 의미를 가집니다. 개발 생산성을 높이고, 애플리케이션의 안정성을 보장하며, 유연한 배포 전략을 가능하게 하는 핵심 기능입니다.
+
+다음 포스트에서는 컨테이너 간 통신을 가능하게 하는 **Docker 네트워킹**에 대해 알아보겠습니다. 마이크로서비스 아키텍처의 핵심이 되는 내용이니 기대해주세요!
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Part 1: Docker 이미지와 컨테이너 기초](/posts/docker-images-containers-basics)
+- → 다음: [Part 3: Docker 네트워킹](/posts/docker-networking)

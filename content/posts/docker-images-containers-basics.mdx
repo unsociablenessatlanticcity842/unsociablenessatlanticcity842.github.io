@@ -1,0 +1,426 @@
+---
+title: "Docker 이미지와 컨테이너 완벽 가이드"
+date: "2025-08-03"
+description: "Docker의 핵심 개념인 이미지와 컨테이너를 이해하고, 실무에서 활용하는 방법을 상세히 알아봅니다"
+tags: ["Docker", "Container", "Image", "DevOps"]
+category: "DevOps"
+series: "Docker 완벽 가이드"
+seriesOrder: 1
+---
+
+# Part 1: Docker 이미지와 컨테이너 완벽 가이드
+
+Docker를 시작할 때 가장 먼저 이해해야 할 두 가지 핵심 개념이 있습니다: **이미지(Image)**와 **컨테이너(Container)**입니다. 이 포스트에서는 이 두 개념을 깊이 있게 다루고, 실무에서 바로 활용할 수 있는 팁과 베스트 프랙티스를 공유하겠습니다.
+
+## 이미지와 컨테이너의 관계
+
+먼저 간단한 비유로 시작해보겠습니다:
+- **이미지**: 쿠키를 만들기 위한 틀(Cookie Cutter)
+- **컨테이너**: 틀로 찍어낸 실제 쿠키
+
+이미지는 읽기 전용 템플릿이고, 컨테이너는 이 템플릿에서 생성된 실행 가능한 인스턴스입니다.
+
+## 이미지 레이어 시스템 이해하기
+
+Docker 이미지의 가장 중요한 특징 중 하나는 **레이어 기반 아키텍처**입니다.
+
+### 레이어가 생성되는 원리
+
+Dockerfile의 각 명령어는 하나의 레이어를 생성합니다. 예를 들어보겠습니다:
+
+```dockerfile
+FROM node:14           # 레이어 1: 베이스 이미지
+WORKDIR /app          # 레이어 2: 작업 디렉토리 설정
+COPY package.json .   # 레이어 3: package.json 복사
+RUN npm install       # 레이어 4: 의존성 설치
+COPY . .              # 레이어 5: 나머지 파일 복사
+CMD ["node", "app.js"] # 레이어 6: 실행 명령
+```
+
+### 캐시 메커니즘과 최적화
+
+Docker는 각 레이어를 캐싱하여 빌드 속도를 향상시킵니다. 하지만 레이어가 변경되면 그 이후의 모든 레이어도 다시 빌드됩니다.
+
+#### ❌ 비효율적인 Dockerfile
+```dockerfile
+FROM node:14
+WORKDIR /app
+COPY . .              # 코드가 변경될 때마다
+RUN npm install       # npm install이 다시 실행됨 (시간 낭비!)
+CMD ["node", "app.js"]
+```
+
+#### ✅ 최적화된 Dockerfile
+```dockerfile
+FROM node:14
+WORKDIR /app
+COPY package*.json .  # 의존성 파일만 먼저 복사
+RUN npm install       # 의존성이 변경될 때만 재실행
+COPY . .              # 소스 코드 복사
+CMD ["node", "app.js"]
+```
+
+이 작은 변경으로 개발 중 빌드 시간을 크게 단축할 수 있습니다!
+
+### 실무 팁: 레이어 최적화 전략
+
+1. **변경 빈도가 낮은 것부터 높은 순으로 배치**
+   ```dockerfile
+   # 거의 변경되지 않음
+   FROM node:14
+   RUN apt-get update && apt-get install -y curl
+   
+   # 가끔 변경됨
+   COPY package*.json .
+   RUN npm install
+   
+   # 자주 변경됨
+   COPY . .
+   ```
+
+2. **관련 명령어 합치기**
+   ```dockerfile
+   # 여러 레이어 생성 (비효율적)
+   RUN apt-get update
+   RUN apt-get install -y curl
+   RUN apt-get install -y git
+   
+   # 하나의 레이어로 (효율적)
+   RUN apt-get update && apt-get install -y \
+       curl \
+       git \
+       && rm -rf /var/lib/apt/lists/*
+   ```
+
+## 컨테이너 실행 모드 마스터하기
+
+### Attached vs Detached 모드
+
+Docker 컨테이너는 두 가지 모드로 실행할 수 있습니다:
+
+#### Attached 모드 (기본값)
+```bash
+docker run -p 8080:80 nginx
+```
+- 터미널이 컨테이너에 연결됨
+- 로그가 실시간으로 출력됨
+- Ctrl+C로 컨테이너 종료
+- **사용 시**: 디버깅, 개발 중 로그 확인
+
+#### Detached 모드 (-d 플래그)
+```bash
+docker run -d -p 8080:80 nginx
+```
+- 백그라운드에서 실행
+- 터미널을 즉시 사용 가능
+- `docker stop` 명령으로 종료
+- **사용 시**: 프로덕션, 장시간 실행
+
+### 실무에서의 활용 패턴
+
+```bash
+# 개발 환경: 로그를 보면서 작업
+docker run --name myapp -p 3000:3000 myapp:dev
+
+# 프로덕션 환경: 백그라운드 실행
+docker run -d --name myapp -p 80:3000 --restart always myapp:prod
+
+# 나중에 로그 확인이 필요할 때
+docker logs -f myapp  # -f는 실시간 follow
+```
+
+## 인터랙티브 모드 활용하기
+
+일부 애플리케이션은 사용자 입력이 필요합니다. Python 스크립트를 예로 들어보겠습니다:
+
+```python
+# app.py
+name = input("이름을 입력하세요: ")
+print(f"안녕하세요, {name}님!")
+```
+
+### 문제 상황
+```bash
+docker run python-app
+# EOFError: EOF when reading a line
+```
+
+### 해결 방법: -it 플래그
+```bash
+docker run -it python-app
+# 이름을 입력하세요: Docker
+# 안녕하세요, Docker님!
+```
+
+### 플래그 설명
+- `-i` (--interactive): 표준 입력 유지
+- `-t` (--tty): 가상 터미널 할당
+
+### 고급 활용법
+
+```bash
+# 실행 중인 컨테이너에 쉘 접속
+docker exec -it myapp /bin/bash
+
+# 컨테이너 재시작 시 인터랙티브 모드 유지
+docker start -ai myapp
+```
+
+## 이미지와 컨테이너 관리
+
+### 효율적인 정리 전략
+
+개발하다 보면 불필요한 이미지와 컨테이너가 쌓입니다. 정기적인 정리가 필요합니다.
+
+#### 1. 상태 확인
+```bash
+# 실행 중인 컨테이너
+docker ps
+
+# 모든 컨테이너 (중지된 것 포함)
+docker ps -a
+
+# 이미지 목록
+docker images
+
+# 디스크 사용량 확인
+docker system df
+```
+
+#### 2. 선택적 삭제
+```bash
+# 특정 컨테이너 삭제
+docker rm container_name
+
+# 특정 이미지 삭제
+docker rmi image_name:tag
+
+# 종료된 모든 컨테이너 삭제
+docker container prune
+```
+
+#### 3. 전체 정리 (주의!)
+```bash
+# 사용되지 않는 모든 리소스 정리
+docker system prune
+
+# 더 공격적인 정리 (태그 없는 이미지 포함)
+docker system prune -a
+
+# 볼륨까지 포함한 완전 정리
+docker system prune -a --volumes
+```
+
+### 실무 팁: 자동화된 정리
+
+```bash
+# crontab에 추가하여 매주 정리
+0 0 * * 0 docker system prune -f
+```
+
+## 이미지 분석과 디버깅
+
+### docker inspect 활용법
+
+`docker inspect`는 이미지와 컨테이너의 상세 정보를 제공합니다.
+
+```bash
+# 전체 정보 보기
+docker image inspect nginx
+
+# 특정 정보만 추출
+docker image inspect nginx --format='{{.Config.ExposedPorts}}'
+
+# 환경 변수 확인
+docker image inspect nginx --format='{{json .Config.Env}}'
+```
+
+### 유용한 inspect 활용 예시
+
+```bash
+# 이미지 크기 확인
+docker image inspect nginx --format='{{.Size}}'
+
+# 레이어 정보 확인
+docker image inspect nginx --format='{{json .RootFS.Layers}}'
+
+# 생성 날짜 확인
+docker image inspect nginx --format='{{.Created}}'
+```
+
+## 파일 복사 기법
+
+### docker cp 명령어
+
+실행 중인 컨테이너와 호스트 간 파일 복사가 가능합니다.
+
+```bash
+# 호스트 → 컨테이너
+docker cp ./config.json myapp:/app/config.json
+
+# 컨테이너 → 호스트
+docker cp myapp:/var/log/app.log ./logs/
+```
+
+### 적절한 사용 사례
+
+✅ **좋은 사용 예**:
+- 로그 파일 추출
+- 설정 파일 임시 수정
+- 디버깅을 위한 파일 확인
+
+❌ **피해야 할 사용**:
+- 프로덕션 코드 업데이트
+- 정기적인 배포 프로세스
+- 버전 관리가 필요한 파일
+
+### 올바른 대안
+
+```bash
+# 코드 업데이트는 이미지 재빌드로
+docker build -t myapp:v2 .
+docker stop myapp
+docker run -d --name myapp myapp:v2
+```
+
+## 네이밍과 태깅 전략
+
+### 컨테이너 네이밍
+
+의미 있는 이름을 사용하면 관리가 훨씬 쉬워집니다.
+
+```bash
+# 랜덤 이름 대신
+docker run -d nginx  # → festive_nobel
+
+# 명확한 이름 사용
+docker run -d --name web-server nginx
+docker run -d --name api-server node-app
+docker run -d --name db postgres
+```
+
+### 이미지 태깅 전략
+
+#### 버전 관리
+```bash
+docker build -t myapp:1.0.0 .
+docker build -t myapp:1.0.1 .
+docker build -t myapp:latest .
+```
+
+#### 환경별 태깅
+```bash
+docker build -t myapp:dev .
+docker build -t myapp:staging .
+docker build -t myapp:prod .
+```
+
+#### 기능별 태깅
+```bash
+docker build -t myapp:feature-auth .
+docker build -t myapp:hotfix-123 .
+```
+
+## 실전 예제: Node.js 애플리케이션
+
+실제 Node.js 애플리케이션을 Docker화하는 완전한 예제를 살펴보겠습니다.
+
+### 1. 애플리케이션 구조
+```
+myapp/
+├── src/
+│   └── index.js
+├── package.json
+├── package-lock.json
+└── Dockerfile
+```
+
+### 2. 최적화된 Dockerfile
+```dockerfile
+# 멀티 스테이지 빌드 사용
+FROM node:14-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM node:14-alpine
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY ./src ./src
+COPY package*.json ./
+
+# 보안을 위한 non-root 사용자
+USER node
+
+EXPOSE 3000
+CMD ["node", "src/index.js"]
+```
+
+### 3. 빌드 및 실행
+```bash
+# 이미지 빌드
+docker build -t myapp:1.0.0 -t myapp:latest .
+
+# 개발 환경 실행
+docker run -d \
+  --name myapp-dev \
+  -p 3000:3000 \
+  -v $(pwd)/src:/app/src \
+  -e NODE_ENV=development \
+  myapp:latest
+
+# 프로덕션 환경 실행
+docker run -d \
+  --name myapp-prod \
+  -p 80:3000 \
+  -e NODE_ENV=production \
+  --restart always \
+  myapp:1.0.0
+```
+
+## 트러블슈팅 가이드
+
+### 자주 발생하는 문제와 해결법
+
+#### 1. 포트 충돌
+```bash
+# 오류: bind: address already in use
+docker run -p 3000:3000 myapp
+
+# 해결: 다른 포트 사용 또는 기존 프로세스 종료
+docker run -p 3001:3000 myapp
+```
+
+#### 2. 권한 문제
+```bash
+# 오류: permission denied
+# 해결: 사용자 지정
+docker run --user $(id -u):$(id -g) myapp
+```
+
+#### 3. 컨테이너가 즉시 종료
+```bash
+# 디버깅을 위한 로그 확인
+docker logs myapp
+
+# 인터랙티브 모드로 디버깅
+docker run -it myapp /bin/sh
+```
+
+## 마무리 및 다음 단계
+
+이번 포스트에서는 Docker의 핵심인 이미지와 컨테이너에 대해 깊이 있게 다뤘습니다. 주요 내용을 정리하면:
+
+1. **이미지 레이어 시스템**을 이해하고 최적화하기
+2. **Attached/Detached 모드**를 상황에 맞게 선택하기
+3. **인터랙티브 모드**로 사용자 입력 처리하기
+4. **효율적인 리소스 관리**로 깔끔한 개발 환경 유지하기
+5. **네이밍과 태깅 전략**으로 체계적인 관리하기
+
+다음 포스트에서는 컨테이너의 일시적인 특성을 극복하고 데이터를 영구적으로 저장하는 방법인 **볼륨(Volume)**에 대해 알아보겠습니다.
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Docker 완벽 가이드: 시리즈 소개](/posts/docker-series-overview)
+- → 다음: [Part 2: 데이터 관리와 볼륨](/posts/docker-data-volumes)

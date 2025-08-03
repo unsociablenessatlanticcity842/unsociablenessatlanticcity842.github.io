@@ -1,0 +1,663 @@
+---
+title: "Docker Compose로 다중 컨테이너 오케스트레이션 마스터하기"
+date: "2025-08-03"
+description: "복잡한 다중 컨테이너 환경을 Docker Compose로 간단하게 관리하는 방법을 배우고, 개발부터 프로덕션까지 활용하는 실전 노하우를 알아봅니다"
+tags: ["Docker", "Docker Compose", "Orchestration", "DevOps"]
+category: "DevOps"
+series: "Docker 완벽 가이드"
+seriesOrder: 5
+---
+
+# Part 5: Docker Compose로 다중 컨테이너 오케스트레이션 마스터하기
+
+이전 포스트에서 다중 컨테이너 애플리케이션을 구축했지만, 각 컨테이너를 개별적으로 관리하는 것은 매우 번거로웠습니다. 긴 명령어, 복잡한 옵션, 실행 순서 관리... 이 모든 것을 해결해주는 도구가 바로 **Docker Compose**입니다.
+
+## Docker Compose란?
+
+Docker Compose는 YAML 파일을 사용해 다중 컨테이너 Docker 애플리케이션을 정의하고 실행하는 도구입니다. 
+
+### 주요 장점
+- **Infrastructure as Code**: 전체 스택을 코드로 정의
+- **간단한 명령어**: `docker-compose up`으로 모든 서비스 시작
+- **환경 관리**: 개발, 테스트, 프로덕션 환경 분리
+- **버전 관리**: Git으로 인프라 구성 추적
+
+## 기본 구조 이해하기
+
+### docker-compose.yml 기본 구조
+```yaml
+version: '3.8'  # Compose 파일 버전
+
+services:       # 컨테이너 정의
+  service1:
+    # 서비스 1 설정
+  service2:
+    # 서비스 2 설정
+
+volumes:        # 볼륨 정의
+  volume1:
+  volume2:
+
+networks:       # 네트워크 정의
+  network1:
+```
+
+## 실전 예제: Goals 애플리케이션
+
+이전 포스트의 복잡한 명령어들을 Docker Compose로 변환해보겠습니다.
+
+### Before: 복잡한 수동 명령어
+```bash
+# 네트워크 생성
+docker network create goals-net
+
+# MongoDB 실행
+docker run -d --name mongodb \
+  -v goals-data:/data/db \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=secret \
+  --network goals-net \
+  mongo
+
+# 백엔드 빌드 및 실행
+docker build -t goals-backend ./backend
+docker run -d --name goals-backend \
+  -v $(pwd)/backend:/app \
+  -v /app/node_modules \
+  -e MONGODB_USERNAME=admin \
+  -e MONGODB_PASSWORD=secret \
+  --network goals-net \
+  -p 80:80 \
+  goals-backend
+
+# 프론트엔드 빌드 및 실행
+docker build -t goals-frontend ./frontend
+docker run -d --name goals-frontend \
+  -v $(pwd)/frontend/src:/app/src \
+  -e REACT_APP_API_URL=http://localhost \
+  -p 3000:3000 \
+  goals-frontend
+```
+
+### After: 간단한 Docker Compose
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    volumes:
+      - goals-data:/data/db
+    
+  backend:
+    build: ./backend
+    ports:
+      - '80:80'
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      MONGODB_USERNAME: admin
+      MONGODB_PASSWORD: secret
+    depends_on:
+      - mongodb
+  
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend/src:/app/src
+    environment:
+      REACT_APP_API_URL: http://localhost
+    depends_on:
+      - backend
+
+volumes:
+  goals-data:
+```
+
+이제 단 하나의 명령으로 전체 스택을 실행할 수 있습니다:
+```bash
+docker-compose up -d
+```
+
+## Docker Compose 핵심 기능 상세
+
+### 1. 이미지 vs 빌드 설정
+
+```yaml
+services:
+  # 공식 이미지 사용
+  database:
+    image: postgres:13-alpine
+  
+  # Dockerfile로 빌드
+  app:
+    build: ./app
+  
+  # 고급 빌드 설정
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_VERSION: 16
+```
+
+### 2. 환경 변수 관리
+
+Docker Compose는 다양한 방법으로 환경 변수를 설정할 수 있습니다:
+
+```yaml
+services:
+  backend:
+    # 방법 1: 직접 정의
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    
+    # 방법 2: 배열 형식
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    
+    # 방법 3: 외부 파일 참조
+    env_file:
+      - ./env/backend.env
+      - ./env/common.env
+```
+
+**.env 파일 예시**
+```bash
+# ./env/backend.env
+NODE_ENV=development
+DB_HOST=mongodb
+DB_PORT=27017
+DB_NAME=goals
+JWT_SECRET=your-secret-key
+```
+
+### 3. 볼륨 상세 설정
+
+```yaml
+services:
+  app:
+    volumes:
+      # 바인드 마운트 (상대 경로)
+      - ./src:/app/src
+      
+      # 바인드 마운트 (절대 경로)
+      - /home/user/data:/app/data
+      
+      # 명명된 볼륨
+      - app-data:/app/data
+      
+      # 익명 볼륨
+      - /app/node_modules
+      
+      # 읽기 전용 마운트
+      - ./config:/app/config:ro
+
+volumes:
+  app-data:
+    # 볼륨 드라이버 설정 (선택사항)
+    driver: local
+    driver_opts:
+      type: none
+      device: /path/to/data
+      o: bind
+```
+
+### 4. 네트워크 구성
+
+```yaml
+services:
+  frontend:
+    networks:
+      - frontend-net
+  
+  backend:
+    networks:
+      - frontend-net
+      - backend-net
+  
+  database:
+    networks:
+      - backend-net
+
+networks:
+  frontend-net:
+    driver: bridge
+  backend-net:
+    driver: bridge
+    # 커스텀 설정
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+```
+
+### 5. 서비스 의존성과 헬스체크
+
+```yaml
+services:
+  database:
+    image: postgres:13
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  backend:
+    build: ./backend
+    depends_on:
+      database:
+        condition: service_healthy  # 헬스체크 통과 후 시작
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
+
+## 고급 기능 활용하기
+
+### 1. 다중 Compose 파일 사용
+
+개발과 프로덕션 환경을 분리할 수 있습니다:
+
+**docker-compose.yml** (기본 설정)
+```yaml
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      NODE_ENV: production
+```
+
+**docker-compose.dev.yml** (개발 환경 오버라이드)
+```yaml
+version: '3.8'
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+    command: npm run dev
+```
+
+**사용 방법**
+```bash
+# 개발 환경
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# 프로덕션 환경
+docker-compose up
+```
+
+### 2. 환경별 설정 관리
+
+**.env 파일을 활용한 환경 분리**
+```bash
+# .env.development
+COMPOSE_PROJECT_NAME=goals-dev
+DB_PASSWORD=dev-password
+API_PORT=3000
+
+# .env.production
+COMPOSE_PROJECT_NAME=goals-prod
+DB_PASSWORD=secure-prod-password
+API_PORT=80
+```
+
+**docker-compose.yml에서 변수 사용**
+```yaml
+services:
+  backend:
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+```
+
+### 3. 스케일링
+
+```bash
+# backend 서비스를 3개로 스케일링
+docker-compose up -d --scale backend=3
+
+# 로드 밸런서 추가
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+```
+
+## 실용적인 명령어 모음
+
+### 기본 명령어
+```bash
+# 서비스 시작
+docker-compose up -d
+
+# 로그 보기
+docker-compose logs -f [service-name]
+
+# 서비스 중지
+docker-compose stop
+
+# 서비스 중지 및 제거
+docker-compose down
+
+# 볼륨까지 모두 제거
+docker-compose down -v
+```
+
+### 개발 중 유용한 명령어
+```bash
+# 특정 서비스만 재시작
+docker-compose restart backend
+
+# 이미지 재빌드 후 시작
+docker-compose up -d --build
+
+# 특정 서비스만 빌드
+docker-compose build backend
+
+# 서비스 상태 확인
+docker-compose ps
+
+# 서비스에서 명령 실행
+docker-compose exec backend npm test
+
+# 새 컨테이너에서 명령 실행
+docker-compose run --rm backend npm install
+```
+
+## 실전 프로젝트: 풀스택 애플리케이션
+
+완전한 프로덕션급 설정 예제를 살펴보겠습니다.
+
+### 프로젝트 구조
+```
+myapp/
+├── docker-compose.yml
+├── docker-compose.prod.yml
+├── .env.example
+├── frontend/
+│   ├── Dockerfile
+│   ├── Dockerfile.prod
+│   └── src/
+├── backend/
+│   ├── Dockerfile
+│   ├── Dockerfile.prod
+│   └── src/
+├── nginx/
+│   ├── nginx.conf
+│   └── nginx.prod.conf
+└── scripts/
+    ├── backup.sh
+    └── deploy.sh
+```
+
+### docker-compose.yml (개발용)
+```yaml
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-myapp}
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis 캐시
+  redis:
+    image: redis:6-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Node.js 백엔드
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-myapp}
+      DB_USER: ${DB_USER:-admin}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev
+
+  # React 프론트엔드
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    command: npm start
+
+  # 개발용 관리 도구
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  default:
+    name: myapp-network
+```
+
+### docker-compose.prod.yml (프로덕션용)
+```yaml
+version: '3.8'
+
+services:
+  # Nginx 리버스 프록시
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - static-data:/usr/share/nginx/html
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+
+  postgres:
+    restart: always
+    ports: []  # 외부 포트 노출 제거
+
+  redis:
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: always
+    volumes: []  # 개발용 볼륨 제거
+    environment:
+      NODE_ENV: production
+    ports: []  # 외부 포트 노출 제거
+    command: node dist/server.js
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        REACT_APP_API_URL: /api
+    volumes:
+      - static-data:/app/build
+    ports: []
+    command: echo "Frontend built successfully"
+
+  # 프로덕션에서는 adminer 제거
+  adminer:
+    deploy:
+      replicas: 0
+
+volumes:
+  static-data:
+```
+
+### 배포 스크립트
+```bash
+#!/bin/bash
+# scripts/deploy.sh
+
+echo "🚀 프로덕션 배포 시작..."
+
+# 환경 변수 로드
+export $(cat .env.production | xargs)
+
+# 이미지 빌드
+echo "📦 이미지 빌드 중..."
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+
+# 기존 서비스 중지
+echo "🛑 기존 서비스 중지..."
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
+
+# 데이터베이스 백업
+echo "💾 데이터베이스 백업..."
+./scripts/backup.sh
+
+# 새 서비스 시작
+echo "🚀 새 서비스 시작..."
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# 헬스 체크
+echo "🏥 헬스 체크..."
+sleep 10
+curl -f http://localhost/health || exit 1
+
+echo "✅ 배포 완료!"
+```
+
+## 트러블슈팅
+
+### 1. 서비스가 시작되지 않을 때
+```bash
+# 상세 로그 확인
+docker-compose logs backend
+
+# 설정 검증
+docker-compose config
+
+# 환경 변수 확인
+docker-compose config | grep -A 5 environment
+```
+
+### 2. 네트워크 문제
+```bash
+# 네트워크 목록 확인
+docker network ls
+
+# 서비스 간 통신 테스트
+docker-compose exec backend ping postgres
+```
+
+### 3. 볼륨 권한 문제
+```yaml
+services:
+  app:
+    user: "${UID}:${GID}"  # 호스트 사용자와 매칭
+    volumes:
+      - ./data:/app/data
+```
+
+## 모범 사례
+
+### 1. 보안
+- 민감한 정보는 `.env` 파일로 관리
+- `.env` 파일은 `.gitignore`에 추가
+- 프로덕션에서는 불필요한 포트 노출 제거
+
+### 2. 성능
+- 멀티 스테이지 빌드로 이미지 크기 최소화
+- 헬스체크로 서비스 안정성 확보
+- 적절한 리소스 제한 설정
+
+### 3. 유지보수
+- 서비스별로 명확한 이름 사용
+- 버전 태그 명시
+- 주석으로 설정 의도 문서화
+
+## 마무리
+
+Docker Compose는 복잡한 다중 컨테이너 환경을 간단하게 만들어줍니다. 하나의 YAML 파일로 전체 인프라를 정의하고, 버전 관리하며, 팀원들과 공유할 수 있습니다.
+
+다음 포스트에서는 개발 도구를 컨테이너화하는 **유틸리티 컨테이너** 패턴을 알아보겠습니다. npm, composer 같은 도구를 로컬에 설치하지 않고도 사용하는 방법을 배워보세요!
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Part 4: 다중 컨테이너 애플리케이션](/posts/docker-multi-container)
+- → 다음: [Part 6: 유틸리티 컨테이너](/posts/docker-utility-containers)

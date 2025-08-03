@@ -1,0 +1,576 @@
+---
+title: "Docker 컨테이너 프로덕션 배포 완벽 가이드"
+date: "2025-08-03"
+description: "개발한 Docker 컨테이너를 프로덕션 환경에 안전하고 효율적으로 배포하는 방법을 멀티 스테이지 빌드, AWS ECS, CI/CD 파이프라인을 통해 알아봅니다"
+tags: ["Docker", "Deployment", "AWS", "CI/CD", "DevOps"]
+category: "DevOps"
+series: "Docker 완벽 가이드"
+seriesOrder: 8
+---
+
+# Part 8: Docker 컨테이너 프로덕션 배포 완벽 가이드
+
+개발 환경에서 완벽하게 작동하는 Docker 컨테이너를 만들었다면, 이제 프로덕션 환경에 배포할 차례입니다. 이번 포스트에서는 보안, 성능, 확장성을 고려한 프로덕션 배포 전략을 상세히 알아보겠습니다.
+
+## 개발 vs 프로덕션: 핵심 차이점
+
+프로덕션 환경은 개발 환경과 근본적으로 다른 요구사항을 가집니다:
+
+| 측면 | 개발 환경 | 프로덕션 환경 |
+|------|----------|--------------|
+| **소스 코드** | 바인드 마운트 | 이미지에 포함 |
+| **디버깅** | 상세 로그, 디버그 모드 | 최소 로그, 최적화 모드 |
+| **의존성** | 개발 도구 포함 | 최소한의 런타임만 |
+| **보안** | 편의성 우선 | 보안 최우선 |
+| **성능** | 개발 편의성 | 최대 성능 |
+| **설정** | 하드코딩 가능 | 환경 변수 필수 |
+
+## 멀티 스테이지 빌드 마스터하기
+
+멀티 스테이지 빌드는 프로덕션 이미지 최적화의 핵심입니다.
+
+### 기본 개념
+
+```dockerfile
+# 스테이지 1: 빌드 환경
+FROM node:16 AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# 스테이지 2: 런타임 환경
+FROM node:16-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY --from=builder /app/dist ./dist
+EXPOSE 3000
+CMD ["node", "dist/server.js"]
+```
+
+### 실전 예제: React + Node.js 애플리케이션
+
+```dockerfile
+# ========== 프론트엔드 빌드 스테이지 ==========
+FROM node:16 AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ .
+RUN npm run build
+
+# ========== 백엔드 빌드 스테이지 ==========
+FROM node:16 AS backend-builder
+WORKDIR /app/backend
+COPY backend/package*.json ./
+RUN npm ci
+COPY backend/ .
+RUN npm run build
+
+# ========== 프로덕션 스테이지 ==========
+FROM node:16-alpine
+# 보안을 위한 non-root 사용자
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+
+WORKDIR /app
+
+# 백엔드 의존성 설치
+COPY backend/package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# 빌드된 파일 복사
+COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/dist ./dist
+COPY --from=frontend-builder --chown=nodejs:nodejs /app/frontend/build ./public
+
+# 환경 변수
+ENV NODE_ENV=production
+
+USER nodejs
+
+EXPOSE 3000
+
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node healthcheck.js
+
+CMD ["node", "dist/server.js"]
+```
+
+### 이미지 크기 최적화 전략
+
+#### 1. 적절한 베이스 이미지 선택
+```dockerfile
+# ❌ 큰 이미지 (800MB+)
+FROM ubuntu:20.04
+RUN apt-get update && apt-get install -y nodejs npm
+
+# ✅ 작은 이미지 (150MB)
+FROM node:16-alpine
+
+# ✅✅ 더 작은 이미지 (5MB + 앱)
+FROM alpine:3.14
+RUN apk add --no-cache nodejs npm
+```
+
+#### 2. 레이어 최적화
+```dockerfile
+# ❌ 많은 레이어
+RUN apt-get update
+RUN apt-get install -y curl
+RUN apt-get install -y git
+RUN apt-get clean
+
+# ✅ 하나의 레이어
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+```
+
+#### 3. 불필요한 파일 제거
+```dockerfile
+# .dockerignore
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.env.*
+.vscode
+coverage
+.nyc_output
+dist
+*.map
+```
+
+## AWS ECS를 활용한 컨테이너 배포
+
+### ECS 기본 구성 요소
+
+- **Task Definition**: 컨테이너 실행 방법 정의
+- **Service**: Task의 실행과 관리
+- **Cluster**: 컨테이너가 실행되는 인프라
+- **ECR**: Docker 이미지 저장소
+
+### Step 1: ECR에 이미지 푸시
+
+```bash
+# AWS CLI 설정
+aws configure
+
+# ECR 로그인
+aws ecr get-login-password --region ap-northeast-2 | \
+  docker login --username AWS --password-stdin \
+  123456789012.dkr.ecr.ap-northeast-2.amazonaws.com
+
+# 이미지 태깅
+docker tag myapp:latest \
+  123456789012.dkr.ecr.ap-northeast-2.amazonaws.com/myapp:latest
+
+# 이미지 푸시
+docker push \
+  123456789012.dkr.ecr.ap-northeast-2.amazonaws.com/myapp:latest
+```
+
+### Step 2: Task Definition 생성
+
+```json
+{
+  "family": "myapp-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "containerDefinitions": [
+    {
+      "name": "myapp",
+      "image": "123456789012.dkr.ecr.ap-northeast-2.amazonaws.com/myapp:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:region:account-id:secret:db-password"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/myapp",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
+```
+
+### Step 3: Service 생성 및 오토스케일링
+
+```bash
+# 서비스 생성
+aws ecs create-service \
+  --cluster myapp-cluster \
+  --service-name myapp-service \
+  --task-definition myapp-task:1 \
+  --desired-count 2 \
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={
+    subnets=[subnet-xxx,subnet-yyy],
+    securityGroups=[sg-xxx],
+    assignPublicIp=ENABLED
+  }"
+
+# 오토스케일링 설정
+aws application-autoscaling register-scalable-target \
+  --service-namespace ecs \
+  --resource-id service/myapp-cluster/myapp-service \
+  --scalable-dimension ecs:service:DesiredCount \
+  --min-capacity 2 \
+  --max-capacity 10
+
+# CPU 기반 스케일링 정책
+aws application-autoscaling put-scaling-policy \
+  --service-namespace ecs \
+  --scalable-dimension ecs:service:DesiredCount \
+  --resource-id service/myapp-cluster/myapp-service \
+  --policy-name cpu-scaling-policy \
+  --policy-type TargetTrackingScaling \
+  --target-tracking-scaling-policy-configuration '{
+    "TargetValue": 70.0,
+    "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+    }
+  }'
+```
+
+## GitHub Actions CI/CD 파이프라인
+
+### .github/workflows/deploy.yml
+```yaml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: myapp
+  ECS_SERVICE: myapp-service
+  ECS_CLUSTER: myapp-cluster
+  ECS_TASK_DEFINITION: task-definition.json
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run tests
+        run: npm test
+        
+      - name: Run linting
+        run: npm run lint
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: myapp
+          image: ${{ steps.build-image.outputs.image }}
+      
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+      
+      - name: Slack Notification
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Deployment ${{ job.status }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+## 보안 모범 사례
+
+### 1. 이미지 스캔
+
+```bash
+# Dockerfile에 보안 스캔 추가
+FROM alpine:3.14
+RUN apk add --no-cache ca-certificates
+
+# 취약점 스캔
+docker scan myapp:latest
+```
+
+### 2. 시크릿 관리
+
+```yaml
+# ❌ 하드코딩된 시크릿
+ENV DB_PASSWORD=mysecretpassword
+
+# ✅ 런타임 시 주입
+ENV DB_PASSWORD_FILE=/run/secrets/db_password
+```
+
+### 3. 최소 권한 원칙
+
+```dockerfile
+# Non-root 사용자 실행
+FROM node:16-alpine
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+USER nodejs
+
+# 읽기 전용 파일시스템
+# docker run --read-only myapp
+```
+
+### 4. 네트워크 보안
+
+```yaml
+# Security Group 설정
+SecurityGroup:
+  Type: AWS::EC2::SecurityGroup
+  Properties:
+    GroupDescription: ECS Security Group
+    SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+    SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 10.0.0.0/16  # VPC 내부만
+```
+
+## 모니터링과 로깅
+
+### 1. CloudWatch 통합
+
+```json
+{
+  "logConfiguration": {
+    "logDriver": "awslogs",
+    "options": {
+      "awslogs-group": "/ecs/myapp",
+      "awslogs-region": "ap-northeast-2",
+      "awslogs-stream-prefix": "ecs",
+      "awslogs-datetime-format": "%Y-%m-%d %H:%M:%S"
+    }
+  }
+}
+```
+
+### 2. 커스텀 메트릭
+
+```javascript
+// CloudWatch 메트릭 전송
+const AWS = require('aws-sdk');
+const cloudwatch = new AWS.CloudWatch();
+
+function sendMetric(metricName, value, unit = 'Count') {
+  const params = {
+    Namespace: 'MyApp',
+    MetricData: [
+      {
+        MetricName: metricName,
+        Value: value,
+        Unit: unit,
+        Timestamp: new Date()
+      }
+    ]
+  };
+  
+  cloudwatch.putMetricData(params, (err, data) => {
+    if (err) console.error('Metric error:', err);
+  });
+}
+
+// 사용 예
+sendMetric('RequestCount', 1);
+sendMetric('ResponseTime', 150, 'Milliseconds');
+```
+
+### 3. 알람 설정
+
+```bash
+# CPU 사용률 알람
+aws cloudwatch put-metric-alarm \
+  --alarm-name cpu-alarm \
+  --alarm-description "Alarm when CPU exceeds 80%" \
+  --metric-name CPUUtilization \
+  --namespace AWS/ECS \
+  --statistic Average \
+  --period 300 \
+  --threshold 80 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 2
+```
+
+## 롤링 업데이트와 블루/그린 배포
+
+### 롤링 업데이트
+
+```json
+{
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 100,
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    }
+  }
+}
+```
+
+### 블루/그린 배포 (CodeDeploy)
+
+```yaml
+# appspec.yml
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "myapp-task:blue"
+        LoadBalancerInfo:
+          ContainerName: "myapp"
+          ContainerPort: 3000
+```
+
+## 비용 최적화
+
+### 1. 적절한 리소스 할당
+
+```json
+{
+  "cpu": "256",    // 0.25 vCPU
+  "memory": "512"  // 512 MB
+}
+```
+
+### 2. Spot 인스턴스 활용
+
+```bash
+aws ecs put-cluster-capacity-providers \
+  --cluster myapp-cluster \
+  --capacity-providers FARGATE FARGATE_SPOT \
+  --default-capacity-provider-strategy \
+    capacityProvider=FARGATE,weight=1 \
+    capacityProvider=FARGATE_SPOT,weight=4
+```
+
+### 3. 자동 스케일링 최적화
+
+```json
+{
+  "TargetValue": 70.0,
+  "ScaleInCooldown": 300,
+  "ScaleOutCooldown": 60
+}
+```
+
+## 체크리스트
+
+프로덕션 배포 전 확인사항:
+
+- [ ] 멀티 스테이지 빌드로 이미지 최적화
+- [ ] 보안 스캔 통과
+- [ ] Non-root 사용자 실행
+- [ ] 헬스체크 구현
+- [ ] 환경 변수로 설정 관리
+- [ ] 시크릿 안전하게 저장
+- [ ] 로깅 설정 완료
+- [ ] 모니터링 대시보드 구성
+- [ ] 알람 설정
+- [ ] 백업 전략 수립
+- [ ] 롤백 계획 준비
+- [ ] 부하 테스트 완료
+
+## 마무리
+
+Docker 컨테이너의 프로덕션 배포는 단순히 코드를 서버에 올리는 것 이상의 의미를 가집니다. 보안, 성능, 안정성, 확장성을 모두 고려해야 하는 복잡한 과정입니다.
+
+이 시리즈를 통해 Docker의 기초부터 프로덕션 배포까지 전 과정을 다뤘습니다. 이제 여러분은 Docker를 활용해 현대적이고 확장 가능한 애플리케이션을 구축하고 배포할 수 있는 모든 지식을 갖추었습니다.
+
+Docker는 계속 발전하고 있습니다. Kubernetes, Service Mesh, Serverless 컨테이너 등 더 많은 주제들이 기다리고 있습니다. 하지만 이 시리즈에서 다룬 기초가 탄탄하다면, 어떤 새로운 기술도 쉽게 익힐 수 있을 것입니다.
+
+Happy Dockerizing! 🐳
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Part 7: Laravel & PHP with Docker](/posts/docker-laravel-php)
+- → 시리즈 완결
