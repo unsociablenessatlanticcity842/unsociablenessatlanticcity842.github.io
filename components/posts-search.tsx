@@ -4,7 +4,9 @@ import { useState, useMemo, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Post } from "@/lib/mdx"
 import { PostCard } from "@/components/post-card"
+import { HorizontalPostCard } from "@/components/horizontal-post-card"
 import { SearchBar } from "@/components/search-bar"
+import { LayoutToggle } from "@/components/layout-toggle"
 import { filterPosts } from "@/lib/search-utils"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -15,6 +17,7 @@ interface PostsSearchProps {
 export function PostsSearch({ posts }: PostsSearchProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [layout, setLayout] = useState<"grid" | "horizontal">("horizontal") // Default to horizontal
   const searchParams = useSearchParams()
 
   // Check if we should auto-focus search on mount
@@ -31,6 +34,20 @@ export function PostsSearch({ posts }: PostsSearchProps) {
       return () => clearTimeout(timer)
     }
   }, [searchParams])
+
+  // Load saved layout preference
+  useEffect(() => {
+    const savedLayout = localStorage.getItem("postsLayout") as "grid" | "horizontal" | null
+    if (savedLayout) {
+      setLayout(savedLayout)
+    }
+  }, [])
+
+  // Save layout preference
+  const handleLayoutChange = (newLayout: "grid" | "horizontal") => {
+    setLayout(newLayout)
+    localStorage.setItem("postsLayout", newLayout)
+  }
 
   // Extract all unique tags
   const availableTags = useMemo(() => {
@@ -73,32 +90,56 @@ export function PostsSearch({ posts }: PostsSearchProps) {
             <>총 {posts.length}개의 포스트가 있습니다</>
           )}
         </p>
+        <LayoutToggle layout={layout} onLayoutChange={handleLayoutChange} />
       </div>
 
-      {/* Posts Grid with Animation */}
+      {/* Posts with Animation */}
       <AnimatePresence mode="popLayout">
         {filteredPosts.length > 0 ? (
-          <motion.div
-            layout
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {filteredPosts.map((post) => (
-              <motion.div
-                key={post.slug}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-              >
-                <PostCard 
-                  post={post} 
-                  highlightTitle={searchTerm}
-                  highlightTags={selectedTags}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          layout === "horizontal" ? (
+            <motion.div
+              layout
+              className="space-y-6"
+            >
+              {filteredPosts.map((post) => (
+                <motion.div
+                  key={post.slug}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <HorizontalPostCard 
+                    post={post}
+                    className="py-6"
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              layout
+              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {filteredPosts.map((post) => (
+                <motion.div
+                  key={post.slug}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <PostCard 
+                    post={post} 
+                    highlightTitle={searchTerm}
+                    highlightTags={selectedTags}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )
         ) : (
           <motion.div
             initial={{ opacity: 0 }}

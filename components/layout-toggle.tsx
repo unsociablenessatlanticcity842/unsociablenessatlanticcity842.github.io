@@ -14,10 +14,7 @@ export function LayoutToggle({ layout, onLayoutChange }: LayoutToggleProps) {
       <Button
         variant={layout === "horizontal" ? "default" : "ghost"}
         size="icon"
-        onClick={() => {
-          console.log("Horizontal button clicked")
-          onLayoutChange("horizontal")
-        }}
+        onClick={() => onLayoutChange("horizontal")}
         className="h-8 w-8"
         title="가로형 레이아웃"
       >
@@ -28,10 +25,7 @@ export function LayoutToggle({ layout, onLayoutChange }: LayoutToggleProps) {
       <Button
         variant={layout === "grid" ? "default" : "ghost"}
         size="icon"
-        onClick={() => {
-          console.log("Grid button clicked")
-          onLayoutChange("grid")
-        }}
+        onClick={() => onLayoutChange("grid")}
         className="h-8 w-8"
         title="그리드 레이아웃"
       >

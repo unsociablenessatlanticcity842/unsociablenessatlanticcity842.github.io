@@ -117,7 +117,7 @@ export function CodeBlock({
             <pre
               ref={codeRef}
               className={cn(
-                "flex-1 overflow-x-auto text-lg leading-6",
+                "flex-1 overflow-x-auto text-base leading-6",
                 className
               )}
             >
