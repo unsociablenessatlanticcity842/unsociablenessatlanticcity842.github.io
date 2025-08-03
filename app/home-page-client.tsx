@@ -41,8 +41,10 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
           Kaameo Dev Blog
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-          개발 여정을 기록하고 공유하는 공간입니다. 
-          Next.js, React, TypeScript 등 다양한 기술 스택에 대한 경험과 인사이트를 나눕니다.
+          다양한 기술 스택에 대한 경험과 인사이트를 나눕니다.
+        </p>
+        <p className="max-w-[700px] text-base text-muted-foreground/70">
+          모든 포스트는 LLM을 통해 생성합니다.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Link href="/posts">
