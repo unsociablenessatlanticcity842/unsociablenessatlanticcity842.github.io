@@ -1,0 +1,1069 @@
+---
+title: "Kubernetes 핵심 개념 마스터하기: 프로덕션을 위한 완벽 가이드"
+date: "2025-08-03"
+description: "ReplicaSet, Service 타입, ConfigMap, Secret, Volume, HPA 등 Kubernetes의 핵심 개념을 실무 예제와 함께 깊이 있게 다룹니다"
+tags: ["Kubernetes", "K8s", "ReplicaSet", "ConfigMap", "HPA", "DevOps"]
+category: "DevOps"
+series: "Kubernetes 완벽 가이드"
+seriesOrder: 2
+---
+
+# Part 2: Kubernetes 핵심 개념 마스터하기
+
+이전 포스트에서 Kubernetes의 기본을 배웠다면, 이제 프로덕션 환경에서 필수적인 핵심 개념들을 깊이 있게 다뤄보겠습니다. 이번 포스트를 마치면 고가용성, 확장성, 보안성을 갖춘 프로덕션급 애플리케이션을 운영할 수 있게 됩니다.
+
+## ReplicaSet 심화 이해
+
+### ReplicaSet이란?
+
+ReplicaSet은 지정된 수의 Pod 복제본을 항상 실행 상태로 유지하는 컨트롤러입니다. 마치 24시간 운영되는 편의점처럼, 직원(Pod)이 아프거나 퇴사해도 항상 정해진 수의 직원이 근무하도록 관리합니다.
+
+### Deployment vs ReplicaSet
+
+```yaml
+# ReplicaSet은 직접 사용하지 않습니다!
+# Deployment가 ReplicaSet을 관리합니다
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # 업데이트 중 추가 Pod 수
+      maxUnavailable: 1  # 업데이트 중 중단 가능 Pod 수
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.21
+```
+
+```bash
+# Deployment가 ReplicaSet을 생성하는 과정 확인
+kubectl get deployment web-app
+kubectl get replicaset
+kubectl get pods
+
+# 이미지 업데이트 시 새로운 ReplicaSet 생성
+kubectl set image deployment/web-app web=nginx:1.22
+kubectl get replicaset --watch
+```
+
+### 실전 시나리오: 카나리 배포
+
+```yaml
+# stable-deployment.yaml (90% 트래픽)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-stable
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      app: web
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: web
+        version: stable
+    spec:
+      containers:
+      - name: web
+        image: myapp:1.0.0
+
+---
+# canary-deployment.yaml (10% 트래픽)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: web
+        version: canary
+    spec:
+      containers:
+      - name: web
+        image: myapp:2.0.0
+
+---
+# service.yaml (두 버전 모두에 트래픽 분산)
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  selector:
+    app: web  # version 레이블 없음 - 모든 버전에 트래픽 분산
+  ports:
+  - port: 80
+```
+
+## Service 타입 완전 정복
+
+Service는 Pod들에게 안정적인 네트워크 엔드포인트를 제공합니다. 각 타입별로 언제, 어떻게 사용하는지 알아봅시다.
+
+### 1. ClusterIP (기본값)
+
+클러스터 내부에서만 접근 가능한 가상 IP를 할당합니다.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: ClusterIP  # 생략 가능 (기본값)
+  selector:
+    app: backend
+  ports:
+  - protocol: TCP
+    port: 80        # Service 포트
+    targetPort: 8080 # Pod 포트
+```
+
+**사용 사례:**
+- 마이크로서비스 간 내부 통신
+- 데이터베이스 서비스
+- 내부 API 서버
+
+### 2. NodePort
+
+각 노드의 특정 포트로 서비스를 노출합니다.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-nodeport
+spec:
+  type: NodePort
+  selector:
+    app: web
+  ports:
+  - protocol: TCP
+    port: 80         # Service 포트
+    targetPort: 8080 # Pod 포트
+    nodePort: 30080  # 노드 포트 (30000-32767)
+```
+
+```bash
+# 접속 방법
+# http://<노드IP>:30080
+curl http://192.168.1.100:30080
+```
+
+**사용 사례:**
+- 개발/테스트 환경
+- 온프레미스 환경에서 간단한 외부 노출
+- LoadBalancer를 사용할 수 없는 환경
+
+### 3. LoadBalancer
+
+클라우드 프로바이더의 로드밸런서를 자동으로 프로비저닝합니다.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-lb
+  annotations:
+    # AWS 예시
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+```
+
+**사용 사례:**
+- 프로덕션 환경의 외부 서비스
+- 고가용성이 필요한 서비스
+- 자동 SSL 인증서 관리 필요 시
+
+### 4. ExternalName
+
+외부 DNS 이름을 서비스로 매핑합니다.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-db
+spec:
+  type: ExternalName
+  externalName: database.example.com
+```
+
+```yaml
+# Pod에서 사용
+env:
+- name: DB_HOST
+  value: external-db  # database.example.com으로 해석됨
+```
+
+**사용 사례:**
+- 외부 데이터베이스 연결
+- 외부 API 서비스 연동
+- 서비스 마이그레이션 시 임시 매핑
+
+### 5. Headless Service
+
+클러스터 IP 없이 Pod IP를 직접 반환합니다.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-headless
+spec:
+  clusterIP: None  # Headless Service
+  selector:
+    app: mongodb
+  ports:
+  - port: 27017
+```
+
+**사용 사례:**
+- StatefulSet과 함께 사용
+- 데이터베이스 클러스터
+- 각 Pod에 직접 연결 필요 시
+
+## ConfigMap으로 설정 분리하기
+
+ConfigMap은 설정 데이터를 컨테이너 이미지와 분리하여 관리합니다.
+
+### ConfigMap 생성 방법
+
+```bash
+# 1. 명령어로 생성
+kubectl create configmap app-config \
+  --from-literal=APP_NAME=MyApp \
+  --from-literal=APP_ENV=production
+
+# 2. 파일에서 생성
+kubectl create configmap app-config \
+  --from-file=config.properties
+
+# 3. 디렉토리에서 생성
+kubectl create configmap app-config \
+  --from-file=config/
+```
+
+### YAML로 정의
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  # 단순 key-value
+  APP_NAME: "MyAwesomeApp"
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  
+  # 파일 형태의 데이터
+  application.properties: |
+    server.port=8080
+    database.pool.size=30
+    cache.ttl=3600
+    
+  nginx.conf: |
+    server {
+      listen 80;
+      server_name example.com;
+      location / {
+        proxy_pass http://backend:8080;
+      }
+    }
+```
+
+### ConfigMap 사용 방법
+
+#### 1. 환경 변수로 주입
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        # 개별 환경 변수
+        env:
+        - name: APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: APP_NAME
+        # 전체 ConfigMap을 환경 변수로
+        envFrom:
+        - configMapRef:
+            name: app-config
+```
+
+#### 2. 볼륨으로 마운트
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: config-volume
+        configMap:
+          name: app-config
+          items:
+          - key: nginx.conf
+            path: default.conf
+```
+
+### 실전 예제: 환경별 설정 관리
+
+```yaml
+# base/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        envFrom:
+        - configMapRef:
+            name: app-config
+
+---
+# dev/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DATABASE_URL: "postgres://dev-db:5432/myapp"
+  LOG_LEVEL: "debug"
+  FEATURE_FLAG_NEW_UI: "true"
+
+---
+# prod/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DATABASE_URL: "postgres://prod-db:5432/myapp"
+  LOG_LEVEL: "error"
+  FEATURE_FLAG_NEW_UI: "false"
+```
+
+## Secret으로 민감 정보 관리하기
+
+Secret은 암호, 토큰, 키와 같은 민감한 정보를 저장합니다.
+
+### Secret 생성
+
+```bash
+# 명령어로 생성
+kubectl create secret generic db-secret \
+  --from-literal=username=dbuser \
+  --from-literal=password='S3cur3P@ssw0rd'
+
+# 파일에서 생성
+kubectl create secret generic tls-secret \
+  --from-file=tls.crt \
+  --from-file=tls.key
+```
+
+### YAML로 정의
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+data:
+  # base64 인코딩된 값
+  username: ZGJ1c2Vy             # echo -n 'dbuser' | base64
+  password: UzNjdXIzUEBzc3cwcmQ=  # echo -n 'S3cur3P@ssw0rd' | base64
+```
+
+### Secret 사용
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        env:
+        # Secret에서 개별 값 가져오기
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        # 파일로 마운트
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: db-secret
+```
+
+### 보안 모범 사례
+
+```yaml
+# 1. RBAC로 Secret 접근 제한
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: secret-reader
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+  resourceNames: ["db-secret"]  # 특정 Secret만 허용
+
+# 2. 암호화된 Secret (Sealed Secrets 사용)
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: db-secret
+spec:
+  encryptedData:
+    username: AgA3Xl5Nn8S...  # 암호화된 데이터
+    password: AgBvYm1pGX4...
+```
+
+## Volume과 영구 저장소
+
+### Volume 타입
+
+#### 1. emptyDir (임시 저장소)
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cache-pod
+spec:
+  containers:
+  - name: app
+    image: myapp
+    volumeMounts:
+    - name: cache-volume
+      mountPath: /cache
+  - name: cache-cleaner
+    image: busybox
+    volumeMounts:
+    - name: cache-volume
+      mountPath: /cache
+  volumes:
+  - name: cache-volume
+    emptyDir:
+      sizeLimit: 1Gi
+```
+
+#### 2. PersistentVolume & PersistentVolumeClaim
+
+```yaml
+# PersistentVolume (관리자가 생성)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-data
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fast-ssd
+  hostPath:  # 테스트용, 프로덕션에서는 클라우드 스토리지 사용
+    path: /mnt/data
+
+---
+# PersistentVolumeClaim (개발자가 요청)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: fast-ssd
+
+---
+# Deployment에서 사용
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        volumeMounts:
+        - name: data-volume
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: pvc-data
+```
+
+### StorageClass (동적 프로비저닝)
+
+```yaml
+# AWS EBS StorageClass
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+```
+
+## Health Check와 Self-healing
+
+### Liveness Probe (생존 확인)
+
+컨테이너가 살아있는지 확인합니다. 실패하면 재시작합니다.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: myapp
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30  # 컨테이너 시작 후 대기
+          periodSeconds: 10        # 체크 주기
+          timeoutSeconds: 5        # 타임아웃
+          failureThreshold: 3      # 연속 실패 허용 횟수
+```
+
+### Readiness Probe (준비 상태 확인)
+
+트래픽을 받을 준비가 되었는지 확인합니다.
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+```
+
+### Startup Probe (시작 확인)
+
+느리게 시작하는 애플리케이션을 위한 프로브입니다.
+
+```yaml
+startupProbe:
+  httpGet:
+    path: /startup
+    port: 8080
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 30  # 최대 5분(10초 * 30회) 대기
+```
+
+### 실전 예제: 종합 헬스체크
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        ports:
+        - containerPort: 8080
+        
+        # 애플리케이션 시작 체크
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 8080
+          failureThreshold: 30
+          periodSeconds: 10
+          
+        # 생존 체크
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          
+        # 준비 상태 체크
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+          
+        # 리소스 설정
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+```
+
+## HorizontalPodAutoscaler (HPA)
+
+HPA는 CPU, 메모리 사용률 또는 커스텀 메트릭을 기반으로 Pod를 자동으로 스케일링합니다.
+
+### 기본 HPA 설정
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-app
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  # CPU 사용률 기반
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # 메모리 사용률 기반
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+```
+
+### 커스텀 메트릭 기반 HPA
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-app-hpa-custom
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-app
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  # 요청 처리율 기반
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  # 큐 길이 기반 (외부 메트릭)
+  - type: External
+    external:
+      metric:
+        name: queue_messages_ready
+        selector:
+          matchLabels:
+            queue: "orders"
+      target:
+        type: Value
+        value: "30"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5분간 안정화
+      policies:
+      - type: Percent
+        value: 50  # 한 번에 최대 50% 감소
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0    # 즉시 스케일 업
+      policies:
+      - type: Percent
+        value: 100  # 한 번에 최대 100% 증가
+        periodSeconds: 60
+      - type: Pods
+        value: 4    # 또는 최대 4개 Pod 추가
+        periodSeconds: 60
+      selectPolicy: Max  # 더 큰 값 선택
+```
+
+### HPA 모니터링
+
+```bash
+# HPA 상태 확인
+kubectl get hpa
+kubectl describe hpa web-app-hpa
+
+# 메트릭 확인
+kubectl top nodes
+kubectl top pods
+
+# HPA 이벤트 확인
+kubectl get events --field-selector involvedObject.name=web-app-hpa
+```
+
+## 실전 예제: 완벽한 프로덕션 애플리케이션
+
+모든 개념을 종합한 프로덕션급 애플리케이션 예제입니다.
+
+```yaml
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+
+---
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: production
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  CACHE_TTL: "3600"
+
+---
+# secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+  namespace: production
+type: Opaque
+data:
+  DATABASE_URL: cG9zdGdyZXM6Ly91c2VyOnBhc3NAZGI6NTQzMi9hcHA=
+  JWT_SECRET: c3VwZXJfc2VjcmV0X2tleV8xMjM0NTY=
+
+---
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  namespace: production
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+        version: v1.0.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - web-app
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: app
+        image: myregistry/web-app:1.0.0
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DATABASE_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: JWT_SECRET
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 8080
+          failureThreshold: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          periodSeconds: 5
+          timeoutSeconds: 3
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: app-data-pvc
+
+---
+# pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-data-pvc
+  namespace: production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+
+---
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-app-service
+  namespace: production
+spec:
+  type: LoadBalancer
+  selector:
+    app: web-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+# hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-app-hpa
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-app
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+```
+
+## 프로덕션 체크리스트
+
+프로덕션 배포 전 확인사항:
+
+### 기본 설정
+- [ ] 적절한 리소스 requests/limits 설정
+- [ ] Health check 구현 (liveness, readiness, startup)
+- [ ] 적절한 replica 수 설정 (최소 3개 권장)
+- [ ] Pod Anti-affinity로 가용성 향상
+
+### 설정 관리
+- [ ] ConfigMap으로 설정 외부화
+- [ ] Secret으로 민감 정보 관리
+- [ ] 환경별 설정 분리 (dev/staging/prod)
+
+### 네트워킹
+- [ ] 적절한 Service 타입 선택
+- [ ] NetworkPolicy로 트래픽 제한 (필요시)
+- [ ] Ingress 설정 (필요시)
+
+### 저장소
+- [ ] Stateful 데이터는 PVC 사용
+- [ ] 적절한 StorageClass 선택
+- [ ] 백업 전략 수립
+
+### 확장성
+- [ ] HPA 설정으로 자동 스케일링
+- [ ] 적절한 메트릭과 임계값 설정
+- [ ] 스케일 업/다운 정책 정의
+
+### 보안
+- [ ] RBAC 권한 최소화
+- [ ] Pod Security Standards 적용
+- [ ] 이미지 취약점 스캔
+
+### 모니터링
+- [ ] 로그 수집 설정
+- [ ] 메트릭 수집 설정
+- [ ] 알림 설정
+
+## 마무리
+
+축하합니다! 이제 Kubernetes의 핵심 개념을 모두 마스터했습니다. 이 지식으로 프로덕션급 애플리케이션을 안정적으로 운영할 수 있습니다.
+
+### 핵심 요약
+- **ReplicaSet**: Deployment를 통해 고가용성 확보
+- **Service**: 적절한 타입으로 네트워크 노출
+- **ConfigMap/Secret**: 설정과 민감 정보 분리
+- **Volume**: 데이터 영속성 보장
+- **Health Check**: 자가 치유 기능 활용
+- **HPA**: 자동 스케일링으로 효율적 운영
+
+### 다음 단계
+- Ingress Controller로 HTTP(S) 라우팅
+- Service Mesh (Istio/Linkerd)로 마이크로서비스 관리
+- GitOps (ArgoCD/Flux)로 배포 자동화
+- Prometheus/Grafana로 모니터링 구축
+
+Kubernetes는 계속 발전하고 있습니다. 기본기를 탄탄히 다졌으니, 이제 더 고급 주제들도 자신있게 도전해보세요!
+
+---
+
+**시리즈 네비게이션**
+- ← 이전: [Part 1: Kubernetes 시작하기](/posts/kubernetes-getting-started)
+- → 시리즈 완결
