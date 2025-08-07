@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { GlobalSidebar } from '@/components/global-sidebar'
-import { GoogleAnalytics } from '@/components/analytics/google-analytics'
+import { GoogleAnalyticsWrapper } from '@/components/analytics/google-analytics-wrapper'
 import { CookieConsent } from '@/components/analytics/cookie-consent'
 import { getCategoriesWithCount, getTagsWithCount } from '@/lib/posts-data'
 
@@ -78,7 +78,7 @@ export default function RootLayout({
             </div>
             <Footer />
           </div>
-          <GoogleAnalytics />
+          <GoogleAnalyticsWrapper />
           <CookieConsent />
         </ThemeProvider>
       </body>

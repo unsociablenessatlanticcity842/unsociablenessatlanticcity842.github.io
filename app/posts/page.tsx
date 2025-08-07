@@ -1,7 +1,6 @@
 import { Metadata } from "next"
-import { Suspense } from "react"
 import { getAllPosts } from "@/lib/mdx"
-import { PostsSearch } from "@/components/posts-search"
+import { PostsSearchWrapper } from "@/components/posts-search-wrapper"
 
 export const metadata: Metadata = {
   title: "All Posts",
@@ -17,9 +16,7 @@ export default function PostsPage() {
         <h1 className="text-4xl font-bold">모든 포스트</h1>
       </div>
 
-      <Suspense fallback={<div>Loading...</div>}>
-        <PostsSearch posts={posts} />
-      </Suspense>
+      <PostsSearchWrapper posts={posts} />
     </div>
   )
 }

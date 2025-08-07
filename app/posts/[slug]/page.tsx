@@ -11,7 +11,7 @@ import { tagToSlug } from "@/lib/slug"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PostTracker } from "@/components/analytics/post-tracker"
+import { PostTrackerWrapper } from "@/components/analytics/post-tracker-wrapper"
 
 // Dynamic import for better performance
 const GiscusComments = dynamic(
@@ -75,7 +75,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <BlogLayout headings={post.headings}>
-      <PostTracker
+      <PostTrackerWrapper
         title={post.title}
         slug={post.slug}
         category={post.category}
