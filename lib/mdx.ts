@@ -20,6 +20,7 @@ export type Post = {
   excerpt: string
   content: string
   readingTime: string
+  wordCount?: number
   tags?: string[]
   category?: string
   author?: string
@@ -75,6 +76,7 @@ export async function getPostBySlug(slug: string) {
     content: mdxSource,
     rawContent: content,
     readingTime: readTime.text,
+    wordCount: readTime.words,
     headings,
     ...(data as PostMatter),
   } as Post & { content: MDXRemoteSerializeResult, rawContent: string }
@@ -100,6 +102,7 @@ export function getAllPosts(): Post[] {
         slug: realSlug,
         content,
         readingTime: readTime.text,
+        wordCount: readTime.words,
         ...(data as PostMatter),
       } as Post
     })

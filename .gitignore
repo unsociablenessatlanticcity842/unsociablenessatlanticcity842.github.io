@@ -46,3 +46,7 @@ itsme.md
 # guide
 guide_docs/
 CLAUDE.md
+
+GA4_IMPLEMENTATION_GUIDE.md
+GISCUS_SETUP.md
+.env.local.example

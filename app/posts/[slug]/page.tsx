@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
+import dynamic from "next/dynamic"
 import { getAllPosts, getPostBySlug } from "@/lib/mdx"
 import { MDXContent } from "@/components/mdx-content"
 import { BlogLayout } from "@/components/blog-layout"
@@ -10,6 +11,23 @@ import { tagToSlug } from "@/lib/slug"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PostTracker } from "@/components/analytics/post-tracker"
+
+// Dynamic import for better performance
+const GiscusComments = dynamic(
+  () => import("@/components/giscus-comments").then((mod) => mod.GiscusComments),
+  {
+    loading: () => (
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold mb-8">댓글</h2>
+        <div className="animate-pulse">
+          <div className="h-32 bg-muted rounded-lg"></div>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+)
 
 interface PostPageProps {
   params: {
@@ -57,6 +75,15 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <BlogLayout headings={post.headings}>
+      <PostTracker
+        title={post.title}
+        slug={post.slug}
+        category={post.category}
+        tags={post.tags}
+        author={post.author}
+        readingTime={post.readingTime ? parseInt(post.readingTime) : undefined}
+        wordCount={post.wordCount}
+      />
       <article className="py-10">
         <Link href="/posts">
           <Button variant="ghost" className="mb-6">
@@ -122,6 +149,9 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* 댓글 섹션 */}
+        <GiscusComments className="border-t pt-8" />
       </article>
     </BlogLayout>
   )
