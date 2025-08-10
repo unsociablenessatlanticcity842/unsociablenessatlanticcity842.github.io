@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { 
   shouldShowConsentBanner, 
   acceptAllConsent, 
-  rejectAllConsent,
+  // rejectAllConsent,
   updateConsent,
   loadConsentState,
   getConsentMessage,
@@ -56,10 +56,10 @@ export function CookieConsent({
     setShowBanner(false)
   }
 
-  const handleRejectAll = () => {
-    rejectAllConsent()
-    setShowBanner(false)
-  }
+  // const handleRejectAll = () => {
+  //   rejectAllConsent()
+  //   setShowBanner(false)
+  // }
 
   const handleSavePreferences = () => {
     // Update each consent type
