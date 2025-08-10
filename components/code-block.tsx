@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { Check, Copy, ChevronDown, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { extractTextFromNode } from "@/lib/extract-text-from-node"
 
 interface CodeBlockProps {
   children: React.ReactNode
@@ -37,27 +38,28 @@ export function CodeBlock({
     }
   }
 
-  // Calculate line numbers
-  const codeString = typeof children === 'string' ? children : ''
-  const lines = codeString.split('\n').filter(line => line !== '')
-  const lineNumbers = lines.length
+  // Calculate line numbers - extract text from React nodes
+  const codeString = extractTextFromNode(children)
+  const lines = codeString.split('\n')
+  // Remove the last empty line if it exists (from trailing newline)
+  const lineNumbers = lines[lines.length - 1] === '' ? lines.length - 1 : lines.length
 
   return (
-    <div className="group relative my-6 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 backdrop-blur-sm">
+    <div className="group relative my-2 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 backdrop-blur-sm">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/50 bg-muted/20 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border/50 bg-muted/20 px-3 py-1">
         <div className="flex items-center gap-2">
           {collapsible && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0"
+              className="h-5 w-5 p-0"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               {isCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3 w-3" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-3 w-3" />
               )}
             </Button>
           )}
@@ -81,7 +83,7 @@ export function CodeBlock({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+          className="h-6 px-1.5 text-xs opacity-0 transition-opacity group-hover:opacity-100"
           onClick={handleCopy}
         >
           {copied ? (
@@ -100,13 +102,17 @@ export function CodeBlock({
 
       {/* Code Content */}
       {!isCollapsed && (
-        <div className="relative overflow-x-auto">
+        <div className="relative overflow-x-auto bg-transparent">
           <div className="flex">
             {/* Line Numbers */}
             {showLineNumbers && lineNumbers > 0 && (
-              <div className="select-none border-r border-border/50 bg-muted/10 px-3 py-5 text-right">
+              <div className="select-none border-r border-border/50 bg-muted/10 px-2 py-2 text-right">
                 {Array.from({ length: lineNumbers }, (_, i) => (
-                  <div key={i + 1} className="text-xs leading-6 text-muted-foreground">
+                  <div 
+                    key={i + 1} 
+                    className="text-xs leading-6 text-muted-foreground/70 font-mono"
+                    style={{ userSelect: 'none' }}
+                  >
                     {i + 1}
                   </div>
                 ))}
@@ -117,11 +123,11 @@ export function CodeBlock({
             <pre
               ref={codeRef}
               className={cn(
-                "flex-1 overflow-x-auto text-base leading-6",
+                "flex-1 overflow-x-auto bg-transparent",
                 className
               )}
             >
-              <code className="block px-6 py-5">{children}</code>
+              <code className="block px-4 py-2 text-sm leading-6 font-mono">{children}</code>
             </pre>
           </div>
         </div>

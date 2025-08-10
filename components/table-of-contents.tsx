@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import type { Heading } from "@/lib/extract-headings"
-import { ChevronRight } from "lucide-react"
+// ChevronRight import removed - no longer needed
 
 interface TableOfContentsProps {
   headings: Heading[]
@@ -50,16 +50,26 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     e.preventDefault()
     const element = document.getElementById(id)
     if (element) {
-      const yOffset = -80 // Fixed header offset
+      // More reliable scrolling with IntersectionObserver compensation
+      const yOffset = -100 // Increased offset for better visibility
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
-      window.scrollTo({ top: y, behavior: "smooth" })
+      
+      // Use requestAnimationFrame for smoother scrolling
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: y, behavior: "smooth" })
+      })
       
       // Update URL without causing navigation
-      window.history.pushState(null, "", `#${id}`)
+      window.history.replaceState(null, "", `#${id}`)
       
-      // Set focus for accessibility
-      element.setAttribute("tabindex", "-1")
-      element.focus()
+      // Set active heading immediately for better UX
+      setActiveHeading(id)
+      
+      // Set focus for accessibility after scroll
+      setTimeout(() => {
+        element.setAttribute("tabindex", "-1")
+        element.focus({ preventScroll: true })
+      }, 500)
     }
   }
 
@@ -68,9 +78,9 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
   }
 
   return (
-    <nav aria-label="목차" className="space-y-1">
-      <h2 className="mb-4 text-lg font-semibold">목차</h2>
-      <ul className="space-y-1 text-sm" role="list">
+    <nav aria-label="목차" className="space-y-0.5">
+      <h2 className="mb-3 text-base font-semibold">목차</h2>
+      <ul className="space-y-0 text-xs" role="list">
         {headings.map((heading) => {
           const isActive = activeHeading === heading.id
           const paddingLeft = (heading.level - 2) * 12 // Indent based on heading level
@@ -81,18 +91,15 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 href={`#${heading.id}`}
                 onClick={(e) => handleClick(e, heading.id)}
                 className={cn(
-                  "group flex items-center py-1 pr-3 text-muted-foreground transition-colors hover:text-foreground",
+                  "group block py-1 pr-2 text-muted-foreground transition-all duration-200 hover:text-foreground relative",
                   isActive && "text-foreground font-medium"
                 )}
-                style={{ paddingLeft: `${paddingLeft}px` }}
+                style={{ 
+                  paddingLeft: `${paddingLeft + 12}px`,
+                  borderLeft: isActive ? "2px solid hsl(var(--primary))" : "2px solid transparent"
+                }}
                 aria-current={isActive ? "location" : undefined}
               >
-                <ChevronRight
-                  className={cn(
-                    "mr-1 h-3 w-3 transition-transform",
-                    isActive && "rotate-90"
-                  )}
-                />
                 <span className="truncate">{heading.text}</span>
               </a>
             </li>

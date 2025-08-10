@@ -1,0 +1,168 @@
+---
+title: "백준 2526번 싸이클"
+date: "2025-08-10"
+description: "백준 2526번 싸이클 문제를 풀며 나머지 연산의 순환 특성을 이해하고 최적화하는 과정"
+category: "Algorithm"
+tags: ["Algorithm", "Baekjoon"]
+author: "Kaameo"
+---
+
+## 문제 소개
+
+> [백준 2526번 - 싸이클](https://www.acmicpc.net/problem/2526)
+
+두 정수 N과 P가 주어질 때, N을 계속 곱해가며 P로 나눈 나머지가 순환하는 구간의 길이를 구하는 문제입니다.
+
+예를 들어 N=22, P=7일 때:
+- 22 % 7 = 1
+- (1 x 22) % 7 = 1
+- (1 x 22) % 7 = 1
+- ...
+
+이렇게 1이 계속 반복되므로 사이클 길이는 1입니다.
+
+## 내가 푼 방식
+
+처음에는 Deque를 사용해서 나머지들을 저장하고, 중복이 발견되면 사이클을 찾는 방식으로 접근했습니다.
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.StringTokenizer;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        // 입력 받기
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int N = Integer.parseInt(st.nextToken());
+        int P = Integer.parseInt(st.nextToken());
+
+        Deque<Integer> deque = new ArrayDeque<>();
+
+        int baseNum = N;
+        int devideNum = P;
+        while (true) {
+            baseNum = baseNum * N;
+            int namu = baseNum % devideNum;
+            baseNum %= devideNum;
+            if(deque.contains(namu)) {
+                deque.push(namu);
+                break;
+            }
+            deque.push(namu);
+        }
+        while (!deque.getFirst().equals(deque.getLast())) {
+            // System.out.println("getFirst(): "+deque.getFirst()+", getLast(): "+deque.getLast());// System.out.println("getFirst(): "+deque.getFirst()+", getLast(): "+deque.getLast());
+            deque.pollLast();
+        }
+        System.out.println(deque.size()-1);
+    }
+}
+```
+
+
+## 최적화된 풀이
+
+GPT의 도움을 받아 더 효율적인 방법을 배웠습니다. 핵심은 **"나머지의 첫 등장 위치를 기록"**하는 것입니다.
+
+```java
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int N = Integer.parseInt(st.nextToken());
+        int P = Integer.parseInt(st.nextToken());
+
+        int[] first = new int[P];          // 나머지의 첫 등장 위치
+        Arrays.fill(first, -1);
+
+        int x = N % P;                     // 나머지(0..P-1) 상태 위에서 시작
+        int idx = 0;
+        while (first[x] == -1) {           // 처음 보는 나머지면 위치 기록
+            first[x] = idx++;
+            x = (x * N) % P;               // 다음 항
+        }
+
+        int cycleLen = idx - first[x];     // 현재 x가 처음 나온 곳부터가 사이클
+        System.out.println(cycleLen);
+    }
+}
+```
+
+## 코드 분석 및 개선점
+
+### 내 코드의 문제점
+
+1. **복잡한 자료구조 사용**
+   - Deque의 `contains()`는 O(n) 시간 복잡도
+   - push(앞삽입) + pollLast(뒤제거)로 사이클을 찾는 로직이 불필요하게 복잡
+
+2. **사이클 경계 판단이 불명확**
+   - 재등장 발견 시 중복 원소를 한 번 더 넣은 뒤 처리하는 방식은 오프바이원 에러 위험
+
+3. **큰 수 처리 불필요**
+   - `baseNum = baseNum * N` 처럼 키우고 나중에 나머지 연산하는 대신
+   - 모든 단계에서 **항상 모듈러 연산**만 유지하면 안전하고 간단
+
+### 최적화된 풀이의 장점
+
+1. **시간 복잡도 O(P)**
+   - 상태 공간이 최대 P개이므로 P번 이내에 반드시 사이클 발견
+   - 배열 인덱싱으로 O(1) 접근
+
+2. **공간 복잡도 O(P)**
+   - 크기 P인 배열 하나만 사용
+   - Deque에 모든 나머지를 저장하는 것보다 효율적
+
+3. **명확한 로직**
+   - "첫 등장 위치 기록 → 재등장 순간 길이 계산"
+   - `idx - first[x]`로 사이클 길이 즉시 확정
+
+## 예시로 이해하기
+
+### 예시 1: N=67, P=31
+```plaintext
+67 % 31 = 5
+(5 x 67) % 31 = 25  
+(25 x 67) % 31 = 1
+(1 x 67) % 31 = 5   // 5가 재등장!
+```
+- 5 → 25 → 1 → 5
+- 사이클 길이 = 3
+
+### 예시 2: N=22, P=7
+```plaintext
+22 % 7 = 1
+(1 x 22) % 7 = 1    // 1이 바로 재등장!
+```
+- 1 → 1
+- 사이클 길이 = 1
+
+## 핵심 인사이트
+
+이 문제의 핵심은 **"다음 항 = (이전 항 x N) mod P"** 인 유한 상태(0..P-1) 순환 수열이라는 점입니다.
+
+- 나머지는 0부터 P-1까지만 가능
+- 최대 P개의 서로 다른 상태만 존재
+- 따라서 반드시 P번 이내에 사이클 발생
+- **처음 동일한 나머지가 재등장하는 순간**이 사이클의 시작
+
+## 배운 점
+
+1. **문제의 본질 파악이 중요**
+   - 나머지 연산의 특성을 이해하면 간단한 배열로 해결 가능
+
+2. **적절한 자료구조 선택**
+   - Deque보다 배열이 더 효율적인 경우
+
+3. **코드 단순화의 가치**
+   - 복잡한 로직보다 명확하고 간단한 접근이 버그도 적고 이해하기 쉬움
+
+이렇게 원리를 이해하니 정말 짧고 깔끔한 코드로 문제를 해결할 수 있었습니다!

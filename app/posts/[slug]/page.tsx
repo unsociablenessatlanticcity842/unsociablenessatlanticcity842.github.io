@@ -136,7 +136,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </TabsList>
           
           <TabsContent value="preview" className="mt-6">
-            <div className="prose prose-lg dark:prose-invert max-w-none">
+            <div className="prose dark:prose-invert max-w-5xl mx-auto">
               <MDXContent source={post.content} />
             </div>
           </TabsContent>
