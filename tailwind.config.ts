@@ -89,18 +89,18 @@ const config = {
               fontSize: '18px',
               letterSpacing: '-0.02rem',
               lineHeight: '1.875',
-              marginTop: '1.5rem',
-              marginBottom: '1.5rem',
+              marginTop: '0.75rem',
+              marginBottom: '0.75rem',
             },
             li: {
               fontSize: '18px',
               letterSpacing: 'normal',
-              lineHeight: '1.875',
+              lineHeight: '1.5',
               marginTop: '0.75rem',
               marginBottom: '0.75rem',
             },
             ul: {
-              marginTop: '1.5rem',
+              marginTop: '1rem',
               marginBottom: '1.5rem',
             },
             ol: {
