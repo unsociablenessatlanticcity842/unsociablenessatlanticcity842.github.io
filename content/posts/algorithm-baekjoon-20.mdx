@@ -1,0 +1,299 @@
+---
+title: "백준 2526번 문제"
+date: "2025-08-10"
+description: "백준 온라인 저지에서 문제를 풀며 경험한 알고리즘 학습 과정을 돌아봅니다."
+category: "Algorithm"
+tags: ["Algorithm", "Baekjoon"]
+author: "Kaameo"
+---
+
+## 들어가며
+
+> [백준 2526번 - 싸이클](https://www.acmicpc.net/problem/2526)
+
+## 문제풀이 과정
+
+### 내가 푼 코드
+
+```java
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        // 입력 받기
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int N = Integer.parseInt(st.nextToken());
+        int P = Integer.parseInt(st.nextToken());
+
+        Deque<Integer> deque = new ArrayDeque<>();
+
+        int baseNum = N;
+        int devideNum = P;
+        while (true) {
+            baseNum = baseNum * N;
+            int namu = baseNum % devideNum;
+            baseNum %= devideNum;
+            if(deque.contains(namu)) {
+                deque.push(namu);
+                break;
+            }
+            deque.push(namu);
+        }
+        while (!deque.getFirst().equals(deque.getLast())) {
+            // System.out.println("getFirst(): "+deque.getFirst()+", getLast(): "+deque.getLast());
+            deque.pollLast();
+        }
+        System.out.println(deque.size()-1);
+    }
+}
+```
+
+
+### 주요 알고리즘 유형
+
+| 알고리즘 유형 | 문제 수 | 대표 문제 | 체감 난이도 |
+|------------|--------|----------|-----------|
+| 구현 | 6 | 2526번 (싸이클) | ⭐⭐ |
+| 그리디 | 4 | 11047번 (동전 0) | ⭐⭐⭐ |
+| DP | 3 | 1463번 (1로 만들기) | ⭐⭐⭐⭐ |
+| BFS/DFS | 3 | 1260번 (DFS와 BFS) | ⭐⭐⭐ |
+| 수학 | 2 | 1978번 (소수 찾기) | ⭐⭐ |
+| 자료구조 | 2 | 10828번 (스택) | ⭐⭐ |
+
+## 기억에 남는 문제들
+
+### 1. 첫 AC를 받았던 순간: 2557번 "Hello World"
+
+```python
+print("Hello World!")
+```
+
+단순해 보이는 이 한 줄이지만, 백준에서의 첫 정답은 특별했습니다. 온라인 저지 시스템의 작동 방식을 이해하고, 입출력 형식의 중요성을 깨달은 순간이었죠.
+
+### 2. 가장 고민했던 문제: 2526번 "싸이클"
+
+이 문제는 단순한 구현 문제처럼 보였지만, 싸이클 검출 알고리즘을 제대로 이해해야 했습니다.
+
+```python
+def find_cycle_length(n, p):
+    seen = {}
+    current = n
+    step = 0
+    
+    while current not in seen:
+        seen[current] = step
+        current = (current * n) % p
+        step += 1
+    
+    return step - seen[current]
+
+n, p = map(int, input().split())
+print(find_cycle_length(n, p))
+```
+
+**핵심 인사이트:**
+- 나머지 연산의 특성상 반드시 싸이클이 발생한다
+- 딕셔너리를 활용한 방문 체크와 동시에 스텝 기록
+- 싸이클의 시작점을 정확히 찾는 것이 중요
+
+### 3. 가장 뿌듯했던 문제: 1463번 "1로 만들기" (DP)
+
+처음으로 다이나믹 프로그래밍을 제대로 이해하고 적용한 문제였습니다.
+
+```python
+def min_operations(n):
+    dp = [0] * (n + 1)
+    
+    for i in range(2, n + 1):
+        # 1을 빼는 경우
+        dp[i] = dp[i - 1] + 1
+        
+        # 2로 나누는 경우
+        if i % 2 == 0:
+            dp[i] = min(dp[i], dp[i // 2] + 1)
+        
+        # 3으로 나누는 경우
+        if i % 3 == 0:
+            dp[i] = min(dp[i], dp[i // 3] + 1)
+    
+    return dp[n]
+
+n = int(input())
+print(min_operations(n))
+```
+
+## 학습 과정에서 깨달은 것들
+
+### 1. 시간 복잡도의 중요성
+
+처음에는 "일단 정답만 나오면 되지 않나?"라고 생각했지만, 시간 초과로 인한 실패를 여러 번 경험하며 효율성의 중요성을 깨달았습니다.
+
+### 2. 엣지 케이스의 함정
+
+```python
+# 초기 실수: n이 1일 때를 고려하지 않음
+def factorial(n):
+    result = 1
+    for i in range(2, n + 1):  # n이 1일 때도 정상 작동
+        result *= i
+    return result
+```
+
+### 3. 디버깅 스킬의 향상
+
+```python
+# 디버깅을 위한 나만의 팁
+def debug(*args):
+    import sys
+    print(*args, file=sys.stderr)  # stderr로 출력하면 채점에 영향 없음
+
+# 사용 예시
+for i in range(n):
+    debug(f"Step {i}: value = {arr[i]}")  # 제출 시 주석 처리 불필요
+```
+
+## 실패에서 배운 교훈들
+
+### 런타임 에러의 늪
+
+가장 많이 마주친 에러는 런타임 에러였습니다. 주요 원인들:
+
+1. **인덱스 범위 초과**
+   ```python
+   # 잘못된 예
+   arr = [1, 2, 3]
+   for i in range(4):  # IndexError!
+       print(arr[i])
+   
+   # 개선된 예
+   for i in range(len(arr)):
+       print(arr[i])
+   ```
+
+2. **0으로 나누기**
+   ```python
+   # 예외 처리 추가
+   if denominator != 0:
+       result = numerator / denominator
+   else:
+       result = 0  # 또는 적절한 처리
+   ```
+
+3. **재귀 깊이 초과**
+   ```python
+   import sys
+   sys.setrecursionlimit(10**6)  # Python의 기본 재귀 한도 증가
+   ```
+
+### 메모리 초과와의 싸움
+
+불필요한 데이터 저장을 최소화하는 법을 배웠습니다:
+
+```python
+# 메모리 낭비 예시
+all_results = []
+for i in range(10**6):
+    all_results.append(calculate(i))  # 모든 결과 저장
+
+# 개선된 예시
+for i in range(10**6):
+    result = calculate(i)
+    if meets_condition(result):
+        print(result)  # 필요한 것만 출력
+```
+
+## 나만의 문제 풀이 루틴
+
+### 1단계: 문제 이해 (10분)
+- 문제를 천천히 3번 읽기
+- 입출력 예시를 손으로 따라가보기
+- 제약 조건 체크 (특히 시간/메모리 제한)
+
+### 2단계: 접근 방법 설계 (15분)
+- 종이에 알고리즘 스케치
+- 시간 복잡도 계산
+- 엣지 케이스 리스트업
+
+### 3단계: 코딩 (20분)
+- 기본 케이스부터 구현
+- 단계별로 테스트
+
+### 4단계: 디버깅 (필요시)
+- 예제 입력으로 테스트
+- 직접 만든 테스트 케이스 추가
+
+### 5단계: 최적화 (시간 초과시)
+- 불필요한 연산 제거
+- 자료구조 변경 고려
+
+## 도움이 된 학습 자료들
+
+### 추천 서적
+- 『이것이 취업을 위한 코딩 테스트다』 - 나동빈
+- 『알고리즘 문제 해결 전략』 - 구종만
+
+### 유용한 온라인 리소스
+- [백준 단계별로 풀어보기](https://www.acmicpc.net/step)
+- [solved.ac](https://solved.ac/) - 문제 난이도 확인
+- [알고리즘 시각화 사이트](https://visualgo.net/)
+
+### 커뮤니티
+- 백준 질문 게시판
+- 네이버 카페 "코딩테스트 준비생 모임"
+- Discord "알고리즘 스터디" 서버
+
+## 앞으로의 목표
+
+### 단기 목표 (3개월)
+- [ ] 실버 I 달성
+- [ ] 누적 50문제 해결
+- [ ] 매일 1문제씩 꾸준히 풀기
+- [ ] DP 문제 10개 이상 풀기
+
+### 중기 목표 (6개월)
+- [ ] 골드 V 진입
+- [ ] 누적 100문제 해결
+- [ ] 알고리즘 스터디 참여
+- [ ] 카카오 코딩 테스트 도전
+
+### 장기 목표 (1년)
+- [ ] 골드 I 달성
+- [ ] 누적 200문제 해결
+- [ ] 알고리즘 강의 또는 블로그 시리즈 작성
+- [ ] 실제 코딩 테스트 통과
+
+## 후배 개발자들에게
+
+알고리즘 공부를 시작하려는 분들께 드리고 싶은 조언:
+
+1. **완벽주의를 버리세요**: 처음부터 최적 해법을 찾으려 하지 마세요. 일단 풀고, 개선하세요.
+
+2. **꾸준함이 답입니다**: 하루에 10문제를 푸는 것보다 매일 1문제씩 푸는 것이 낫습니다.
+
+3. **풀이를 보는 것을 두려워하지 마세요**: 30분 고민해도 모르겠다면 풀이를 보고 이해하는 것도 학습입니다.
+
+4. **코드 리뷰를 받으세요**: 다른 사람의 코드를 보고, 내 코드도 공유하세요.
+
+5. **실패를 기록하세요**: 틀린 문제, 틀린 이유를 기록하면 같은 실수를 반복하지 않습니다.
+
+## 맺으며
+
+20문제는 작은 숫자일 수 있지만, 저에게는 의미 있는 시작이었습니다. 처음에는 브론즈 문제도 어려워했던 제가 이제는 실버 문제를 풀 수 있게 되었고, 무엇보다 문제를 바라보는 시각이 달라졌습니다.
+
+알고리즘 공부는 마라톤과 같습니다. 빠르게 달리는 것보다 꾸준히 달리는 것이 중요하죠. 앞으로도 이 페이스를 유지하며, 다음 회고록에서는 50문제, 100문제의 이야기를 들려드리고 싶습니다.
+
+> "The expert in anything was once a beginner." - Helen Hayes
+
+모든 전문가도 한때는 초보자였습니다. 지금 시작하는 것이 가장 빠른 길입니다.
+
+---
+
+*이 글이 알고리즘 공부를 시작하려는 분들께 작은 용기와 동기부여가 되기를 바랍니다. 함께 성장해나가요!*
+
+## 관련 링크
+
+- [내 백준 프로필](https://www.acmicpc.net/user/yourid)
+- [GitHub 알고리즘 저장소](https://github.com/yourid/algorithm-practice)
+- [문제 풀이 노트 (Notion)](https://notion.so/algorithm-notes)

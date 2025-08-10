@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+    --background: 40 23% 97%; /* Warm off-white #FAFAF8 */
+    --foreground: 222.2 47% 11%; /* Softer black #0F172A */
+    --card: 60 9% 98%; /* Very light warm gray #FCFCFB */
+    --card-foreground: 222.2 47% 11%;
+    --popover: 60 9% 98%;
+    --popover-foreground: 222.2 47% 11%;
+    --primary: 217 91% 45%; /* Softer blue #1E69DE */
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 220 14% 96%; /* Light blue-gray #F1F5F9 */
+    --secondary-foreground: 222.2 47% 15%;
+    --muted: 220 14% 95%; /* Soft gray #F1F5F9 */
+    --muted-foreground: 220 9% 46%; /* Medium gray #64748B */
+    --accent: 217 10% 95%; /* Light accent #F0F4F8 */
+    --accent-foreground: 222.2 47% 11%;
+    --destructive: 0 72% 51%; /* Softer red #E74C3C */
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 90%; /* Soft border #E2E8F0 */
+    --input: 220 13% 91%; /* Input background #E7ECF3 */
+    --ring: 217 91% 60%; /* Focus ring #5B9CF6 */
     --radius: 0.5rem;
   }
 
@@ -109,16 +109,25 @@ pre[class*="language-"] {
   border: none;
 }
 
+/* Code block styling for light mode */
+.prose pre {
+  @apply bg-gray-50 dark:bg-slate-900 rounded-lg overflow-hidden m-0 border border-gray-200 dark:border-slate-800;
+}
+
+.prose code {
+  @apply bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 px-1.5 py-0.5 rounded;
+}
+
 /* Enhanced syntax highlighting with better contrast */
 .token.comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
-  @apply text-slate-500 dark:text-slate-400 italic;
+  @apply text-slate-600 dark:text-slate-400 italic;
 }
 
 .token.punctuation {
-  @apply text-slate-600 dark:text-slate-300;
+  @apply text-slate-700 dark:text-slate-300;
 }
 
 .token.property,
@@ -128,7 +137,7 @@ pre[class*="language-"] {
 .token.constant,
 .token.symbol,
 .token.deleted {
-  @apply text-rose-600 dark:text-rose-400;
+  @apply text-rose-700 dark:text-rose-400;
 }
 
 .token.selector,
@@ -137,7 +146,7 @@ pre[class*="language-"] {
 .token.char,
 .token.builtin,
 .token.inserted {
-  @apply text-emerald-600 dark:text-emerald-400;
+  @apply text-emerald-700 dark:text-emerald-400;
 }
 
 .token.operator,
@@ -145,7 +154,7 @@ pre[class*="language-"] {
 .token.url,
 .language-css .token.string,
 .style .token.string {
-  @apply text-cyan-600 dark:text-cyan-400;
+  @apply text-cyan-700 dark:text-cyan-400;
 }
 
 .token.atrule,
@@ -216,6 +225,47 @@ pre[class*="language-"] {
   padding-left: 0 !important;
   margin-left: 0 !important;
   border-left: none !important;
+}
+
+/* Fix blockquote styling - remove default italic and quotes */
+.prose blockquote {
+  font-style: normal !important;
+}
+
+.prose blockquote p {
+  font-style: normal !important;
+}
+
+.prose blockquote a {
+  font-style: normal !important;
+}
+
+.prose blockquote strong {
+  font-style: normal !important;
+  font-weight: bold !important;
+}
+
+/* Only apply italic when explicitly marked with em or i tags */
+.prose blockquote em,
+.prose blockquote i {
+  font-style: italic !important;
+}
+
+/* Remove quotation marks from blockquotes */
+.prose blockquote::before {
+  content: none !important;
+}
+
+.prose blockquote::after {
+  content: none !important;
+}
+
+.prose blockquote p::before {
+  content: none !important;
+}
+
+.prose blockquote p::after {
+  content: none !important;
 }
 
 .rehype-code-title {

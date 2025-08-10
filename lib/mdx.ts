@@ -17,7 +17,7 @@ export type Post = {
   slug: string
   title: string
   date: string
-  excerpt: string
+  description: string
   content: string
   readingTime: string
   wordCount?: number
@@ -31,7 +31,7 @@ export type Post = {
 export type PostMatter = {
   title: string
   date: string
-  excerpt: string
+  description: string
   tags?: string[]
   category?: string
   author?: string

@@ -47,7 +47,7 @@ export function HorizontalPostCard({ post, featured = false, className }: Horizo
               "text-muted-foreground",
               featured ? "line-clamp-2 sm:line-clamp-3 text-sm sm:text-base" : "hidden sm:block line-clamp-2 text-sm"
             )}>
-              {post.excerpt}
+              {post.description}
             </p>
 
             {/* Meta Information */}

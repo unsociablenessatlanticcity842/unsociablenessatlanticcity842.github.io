@@ -33,7 +33,7 @@ export function PostCard({ post, highlightTitle, highlightTags = [] }: PostCardP
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground line-clamp-3">{post.excerpt}</p>
+          <p className="text-muted-foreground line-clamp-3">{post.description}</p>
         </CardContent>
         <CardFooter className="flex flex-wrap gap-2">
           {post.category && (
