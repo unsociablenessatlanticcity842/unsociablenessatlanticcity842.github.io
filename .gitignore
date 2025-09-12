@@ -50,3 +50,9 @@ CLAUDE.md
 GA4_IMPLEMENTATION_GUIDE.md
 GISCUS_SETUP.md
 .env.local.example
+
+content/posts-backup/
+
+scripts/
+
+lib/mdx.ts.backup

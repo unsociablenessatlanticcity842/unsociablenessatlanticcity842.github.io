@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -495,11 +496,14 @@ export default function AboutPage() {
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {category.badges.map((badge, index) => (
-                      <img 
+                      <Image 
                         key={index} 
                         src={badge} 
                         alt={category.items[index]}
-                        className="h-7"
+                        width={112}
+                        height={28}
+                        className="h-7 w-auto"
+                        unoptimized
                       />
                     ))}
                   </div>
@@ -661,15 +665,21 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
-              <img 
+              <Image 
                 src="https://github-readme-stats.vercel.app/api?username=kaameo&show_icons=true&theme=default&hide=issues&count_private=true" 
                 alt="GitHub Stats"
+                width={495}
+                height={195}
                 className="w-full rounded-lg"
+                unoptimized
               />
-              <img 
+              <Image 
                 src="https://github-readme-stats.vercel.app/api/top-langs/?username=kaameo&layout=compact&theme=default" 
                 alt="Top Languages"
+                width={495}
+                height={195}
                 className="w-full rounded-lg"
+                unoptimized
               />
             </div>
           </CardContent>

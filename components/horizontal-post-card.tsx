@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock } from "lucide-react"
@@ -98,10 +99,13 @@ export function HorizontalPostCard({ post, featured = false, className }: Horizo
               "relative overflow-hidden rounded-lg bg-muted flex-shrink-0",
               featured ? "w-full md:w-72 h-48 md:h-48" : "w-full sm:w-40 md:w-48 h-32 sm:h-28 md:h-32"
             )}>
-              <img
+              <Image
                 src={post.coverImage}
                 alt={post.title}
+                width={featured ? 288 : 192}
+                height={featured ? 192 : 128}
                 className="object-cover w-full h-full"
+                unoptimized
               />
             </div>
           )}
