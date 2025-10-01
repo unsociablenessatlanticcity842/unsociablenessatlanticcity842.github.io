@@ -91,16 +91,24 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 href={`#${heading.id}`}
                 onClick={(e) => handleClick(e, heading.id)}
                 className={cn(
-                  "group block py-1 pr-2 text-muted-foreground transition-all duration-200 hover:text-foreground relative",
-                  isActive && "text-foreground font-medium"
+                  "group block py-1.5 pr-2 text-muted-foreground transition-all duration-300 hover:text-foreground relative rounded-r-md",
+                  isActive && "text-primary font-semibold bg-primary/5 dark:bg-primary/10"
                 )}
-                style={{ 
+                style={{
                   paddingLeft: `${paddingLeft + 12}px`,
-                  borderLeft: isActive ? "2px solid hsl(var(--primary))" : "2px solid transparent"
+                  borderLeft: isActive ? "3px solid hsl(var(--primary))" : "3px solid transparent",
+                  transform: isActive ? "translateX(2px)" : "translateX(0)"
                 }}
                 aria-current={isActive ? "location" : undefined}
               >
                 <span className="truncate">{heading.text}</span>
+                {isActive && (
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-primary">
+                    <svg width="4" height="4" viewBox="0 0 4 4" fill="currentColor">
+                      <circle cx="2" cy="2" r="2" />
+                    </svg>
+                  </span>
+                )}
               </a>
             </li>
           )

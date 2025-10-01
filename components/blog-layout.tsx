@@ -20,15 +20,15 @@ export function BlogLayout({
 
   return (
     <div className="container relative">
-      {/* Mobile TOC Button */}
+      {/* Mobile TOC Button - Floating */}
       {headings.length > 0 && (
-        <div className="sticky top-16 z-40 flex justify-end bg-background py-2 xl:hidden">
+        <div className="fixed top-20 right-4 z-40 xl:hidden">
           <Sheet open={tocOpen} onOpenChange={setTocOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-background shadow-lg hover:shadow-xl transition-shadow"
                 aria-label="목차 열기"
               >
                 <List className="h-4 w-4" />
