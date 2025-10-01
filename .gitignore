@@ -45,9 +45,8 @@ itsme.ko.md
 itsme.md
 
 # guide
-guide_docs/BLOG_CONTENT_GUIDE.md
-guide_docs/GA4_IMPLEMENTATION_GUIDE.md
-guide_docs/GISCUS_SETUP.md
+guide_docs/
+
 CLAUDE.md
 
 .env.local.example
