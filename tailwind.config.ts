@@ -87,7 +87,7 @@ const config = {
             letterSpacing: 'normal',
             p: {
               fontSize: '18px',
-              letterSpacing: '-0.02rem',
+              letterSpacing: '-0.004em',
               lineHeight: '1.875',
               marginTop: '0.75rem',
               marginBottom: '0.75rem',
@@ -113,7 +113,7 @@ const config = {
               marginBottom: '2em',
             },
             'h1, h2, h3': {
-              letterSpacing: '-0.01em',
+              letterSpacing: '-0.02em',
               fontWeight: '700',
             },
             h1: {
