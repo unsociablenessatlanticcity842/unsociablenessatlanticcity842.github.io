@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { HorizontalPostCard } from "@/components/horizontal-post-card"
+import { HorizontalPostCardSkeleton } from "@/components/horizontal-post-card-skeleton"
 import { PostCard } from "@/components/post-card"
+import { PostCardSkeleton } from "@/components/post-card-skeleton"
 import { Button } from "@/components/ui/button"
 import { SearchLink } from "@/components/search-link"
 import { LayoutToggle } from "@/components/layout-toggle"
@@ -17,13 +19,16 @@ interface HomePageClientProps {
 export default function HomePageClient({ posts }: HomePageClientProps) {
   // Default to horizontal layout
   const [layout, setLayout] = useState<"grid" | "horizontal">("horizontal")
-  
+  const [isLoading, setIsLoading] = useState(true)
+
   // Load saved layout preference
   useEffect(() => {
     const savedLayout = localStorage.getItem("homeLayout") as "grid" | "horizontal" | null
     if (savedLayout) {
       setLayout(savedLayout)
     }
+    // Simulate initial loading state
+    setIsLoading(false)
   }, [])
   
   // Save layout preference
@@ -79,11 +84,25 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
           </div>
         </div>
         
-        {layout === "horizontal" ? (
+        {isLoading ? (
+          layout === "horizontal" ? (
+            <div className="space-y-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <HorizontalPostCardSkeleton key={i} className="py-6" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <PostCardSkeleton key={i} />
+              ))}
+            </div>
+          )
+        ) : layout === "horizontal" ? (
           <div className="space-y-6">
             {posts.slice(0, 6).map((post) => (
-              <HorizontalPostCard 
-                key={post.slug} 
+              <HorizontalPostCard
+                key={post.slug}
                 post={post}
                 className="py-6"
               />

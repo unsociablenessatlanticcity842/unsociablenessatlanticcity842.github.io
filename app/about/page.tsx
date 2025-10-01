@@ -336,7 +336,6 @@ const content: Record<Language, Content> = {
     certifications: {
       title: "자격증",
       items: [
-        "정보처리기사",
         "SQLD (SQL 개발자 자격증)"
       ]
     },
