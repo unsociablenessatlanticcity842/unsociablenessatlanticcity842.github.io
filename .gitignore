@@ -45,15 +45,15 @@ itsme.ko.md
 itsme.md
 
 # guide
-guide_docs/
+guide_docs/BLOG_CONTENT_GUIDE.md
+guide_docs/GA4_IMPLEMENTATION_GUIDE.md
+guide_docs/GISCUS_SETUP.md
 CLAUDE.md
 
-GA4_IMPLEMENTATION_GUIDE.md
-GISCUS_SETUP.md
 .env.local.example
 
 content/posts-backup/
 
-scripts/
+scripts/migrate-posts-to-folders.js
 
 lib/mdx.ts.backup
