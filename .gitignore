@@ -41,18 +41,13 @@ next-env.d.ts
 BLOG_CONTENT_GUIDE.md
 
 # itsme
-itsme.ko.md
-itsme.md
-
-# guide
-guide_docs/
+*/itsme.ko.md
+*/itsme.en.md
 
 CLAUDE.md
 
 .env.local.example
 
 content/posts-backup/
-
-scripts/migrate-posts-to-folders.js
 
 lib/mdx.ts.backup
