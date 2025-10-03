@@ -86,7 +86,7 @@ function generateSitemap() {
 
   // Homepage
   urls.push({
-    loc: SITE_URL,
+    loc: `${SITE_URL}/`,
     lastmod: new Date().toISOString(),
     changefreq: 'daily',
     priority: '1.0',
@@ -94,7 +94,7 @@ function generateSitemap() {
 
   // Posts page
   urls.push({
-    loc: `${SITE_URL}/posts`,
+    loc: `${SITE_URL}/posts/`,
     lastmod: new Date().toISOString(),
     changefreq: 'daily',
     priority: '0.9',
@@ -103,7 +103,7 @@ function generateSitemap() {
   // Individual posts
   posts.forEach(post => {
     urls.push({
-      loc: `${SITE_URL}/posts/${post.slug}`,
+      loc: `${SITE_URL}/posts/${post.slug}/`,
       lastmod: post.lastmod,
       changefreq: 'weekly',
       priority: '0.8',
@@ -114,7 +114,7 @@ function generateSitemap() {
   categories.forEach(category => {
     const slug = encodeURIComponent(category);
     urls.push({
-      loc: `${SITE_URL}/categories/${slug}`,
+      loc: `${SITE_URL}/categories/${slug}/`,
       lastmod: new Date().toISOString(),
       changefreq: 'weekly',
       priority: '0.7',
@@ -125,7 +125,7 @@ function generateSitemap() {
   tags.forEach(tag => {
     const slug = encodeURIComponent(tag);
     urls.push({
-      loc: `${SITE_URL}/tags/${slug}`,
+      loc: `${SITE_URL}/tags/${slug}/`,
       lastmod: new Date().toISOString(),
       changefreq: 'weekly',
       priority: '0.6',
