@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { 
   shouldShowConsentBanner, 
   acceptAllConsent, 
-  // rejectAllConsent,
+  rejectAllConsent,
   updateConsent,
   loadConsentState,
   getConsentMessage,
@@ -56,10 +56,10 @@ export function CookieConsent({
     setShowBanner(false)
   }
 
-  // const handleRejectAll = () => {
-  //   rejectAllConsent()
-  //   setShowBanner(false)
-  // }
+  const handleRejectAll = () => {
+    rejectAllConsent()
+    setShowBanner(false)
+  }
 
   const handleSavePreferences = () => {
     // Update each consent type
@@ -129,14 +129,14 @@ export function CookieConsent({
                     <Settings className="h-4 w-4 mr-2" />
                     {messages.customize}
                   </Button>
-                  {/* <Button
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={handleRejectAll}
                     className="order-2"
                   >
                     {messages.rejectAll}
-                  </Button> */}
+                  </Button>
                   <Button
                     size="sm"
                     onClick={handleAcceptAll}
@@ -240,14 +240,14 @@ export function CookieConsent({
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t">
-                  {/* <Button
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={handleRejectAll}
                     className="sm:mr-auto"
                   >
                     {messages.rejectAll}
-                  </Button> */}
+                  </Button>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:ml-auto">
                     <Button
                       variant="outline"
