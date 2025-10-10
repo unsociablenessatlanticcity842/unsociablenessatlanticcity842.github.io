@@ -1,0 +1,309 @@
+---
+title: "@Controller와 @RestController의 차이점"
+date: "2025-10-10"
+description: "Spring의 @Controller와 @RestController 어노테이션의 차이점과 사용 시나리오를 실제 예제와 함께 알아봅니다"
+category: "Spring"
+tags: ["Spring Boot", "Java", "Backend", "REST API", "Web MVC"]
+author: "Kaameo"
+---
+
+## 개요
+
+Spring Framework에서 웹 요청을 처리하는 컨트롤러를 정의할 때 `@Controller`와 `@RestController` 어노테이션을 사용할 수 있습니다. 이 두 어노테이션의 주요 차이점은 **HTTP 응답을 어떻게 처리하는가**에 있습니다.
+
+이 포스트에서는 두 어노테이션의 차이점과 각각의 사용 시나리오를 실제 예제와 함께 알아보겠습니다.
+
+## @Controller - 뷰를 반환하는 컨트롤러
+
+`@Controller`는 전통적인 Spring MVC 컨트롤러를 정의할 때 사용됩니다.
+
+### 주요 특징
+
+1. **View 반환**: 메서드가 반환하는 값은 뷰 리졸버(View Resolver)에 의해 해석됩니다
+2. **Template Engine 연동**: JSP, Thymeleaf, Freemarker 등의 템플릿 엔진과 함께 사용
+3. **HTML 응답 생성**: 서버 사이드 렌더링으로 HTML 페이지를 생성하여 반환
+
+### 사용 예제
+
+```java
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class UserController {
+
+    @GetMapping("/users")
+    public String listUsers(Model model) {
+        // 데이터를 모델에 추가
+        model.addAttribute("users", userService.findAll());
+
+        // "users" 라는 뷰 이름을 반환
+        // ViewResolver가 "users.html" 또는 "users.jsp" 템플릿을 찾아서 렌더링
+        return "users";
+    }
+
+    @GetMapping("/user/{id}")
+    public String getUserDetail(@PathVariable Long id, Model model) {
+        model.addAttribute("user", userService.findById(id));
+        return "user-detail";
+    }
+}
+```
+
+### @Controller에서 JSON 응답하기
+
+`@Controller`에서도 JSON 응답을 할 수 있지만, **각 메서드마다** `@ResponseBody`를 추가해야 합니다.
+
+```java
+@Controller
+public class ApiController {
+
+    @GetMapping("/api/users")
+    @ResponseBody  // 이 어노테이션이 있어야 JSON으로 변환됨
+    public List<User> getUsers() {
+        return userService.findAll();
+    }
+
+    @GetMapping("/api/user/{id}")
+    @ResponseBody  // 매번 붙여줘야 함
+    public User getUser(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+}
+```
+
+## @RestController - RESTful API를 위한 컨트롤러
+
+`@RestController`는 RESTful 웹 서비스를 만들 때 사용하는 어노테이션입니다.
+
+### 주요 특징
+
+1. **데이터 반환**: 메서드가 반환하는 값이 자동으로 JSON/XML로 변환됩니다
+2. **@ResponseBody 생략**: 모든 메서드에 `@ResponseBody`가 자동으로 적용됩니다
+3. **API 전용**: 주로 REST API 엔드포인트를 만들 때 사용합니다
+
+### 내부 구조
+
+실제로 `@RestController`는 다음과 같이 정의되어 있습니다:
+
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Controller
+@ResponseBody  // 핵심: @Controller + @ResponseBody의 조합
+public @interface RestController {
+    @AliasFor(annotation = Controller.class)
+    String value() default "";
+}
+```
+
+즉, **`@RestController` = `@Controller` + `@ResponseBody`** 입니다.
+
+### 사용 예제
+
+```java
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
+public class UserRestController {
+
+    @GetMapping("/users")
+    public List<User> listUsers() {
+        // 반환값이 자동으로 JSON으로 변환됨
+        return userService.findAll();
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+
+    @PostMapping("/users")
+    public User createUser(@RequestBody User user) {
+        return userService.save(user);
+    }
+
+    @PutMapping("/users/{id}")
+    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+        return userService.update(id, user);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.delete(id);
+    }
+}
+```
+
+### 응답 예시
+
+위 코드의 `/api/users` 엔드포인트를 호출하면 다음과 같은 JSON 응답이 자동으로 생성됩니다:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "홍길동",
+    "email": "hong@example.com"
+  },
+  {
+    "id": 2,
+    "name": "김철수",
+    "email": "kim@example.com"
+  }
+]
+```
+
+## 비교 표
+
+| 특징 | @Controller | @RestController |
+|------|------------|----------------|
+| **주 용도** | 웹 페이지 (View) 반환 | RESTful API (데이터) 반환 |
+| **반환 타입** | View 이름 (String) | 객체 (JSON/XML로 자동 변환) |
+| **@ResponseBody** | 각 메서드마다 필요 | 자동 적용 (생략 가능) |
+| **Template Engine** | JSP, Thymeleaf 등과 연동 | 사용하지 않음 |
+| **응답 형식** | HTML | JSON, XML |
+| **사용 시나리오** | 서버 사이드 렌더링 웹 앱 | SPA, 모바일 앱 백엔드 API |
+
+## 실전 시나리오별 선택 가이드
+
+### `@Controller`를 사용해야 하는 경우
+
+1. **서버 사이드 렌더링(SSR)**: 서버에서 HTML을 생성하여 전송
+2. **전통적인 웹 애플리케이션**: JSP, Thymeleaf로 View를 관리
+3. **SEO 최적화**: 검색 엔진이 HTML을 직접 크롤링해야 하는 경우
+4. **복잡한 화면 구성**: 백엔드에서 데이터를 조합하여 화면을 구성
+
+```java
+@Controller
+public class WebController {
+
+    @GetMapping("/")
+    public String home(Model model) {
+        model.addAttribute("message", "Welcome!");
+        return "index";  // templates/index.html 렌더링
+    }
+
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";  // templates/login.html 렌더링
+    }
+}
+```
+
+### @RestController를 사용해야 하는 경우
+
+1. **RESTful API**: React, Vue, Angular 등 프론트엔드 프레임워크와 연동
+2. **모바일 앱 백엔드**: iOS, Android 앱에 데이터 제공
+3. **마이크로서비스**: 서비스 간 통신을 위한 API
+4. **Single Page Application (SPA)**: 프론트엔드에서 렌더링, 백엔드는 데이터만 제공
+
+```java
+@RestController
+@RequestMapping("/api/v1")
+public class ProductApiController {
+
+    @GetMapping("/products")
+    public List<Product> getProducts() {
+        return productService.findAll();
+    }
+
+    @PostMapping("/products")
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+        Product saved = productService.save(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+}
+```
+
+## 혼합 사용 예제
+
+실제 프로젝트에서는 두 어노테이션을 함께 사용하는 경우가 많습니다.
+
+```java
+// 웹 페이지 컨트롤러
+@Controller
+public class WebController {
+
+    @GetMapping("/dashboard")
+    public String dashboard() {
+        return "dashboard";  // 대시보드 HTML 페이지 반환
+    }
+}
+
+// API 컨트롤러
+@RestController
+@RequestMapping("/api")
+public class DashboardApiController {
+
+    @GetMapping("/dashboard/stats")
+    public DashboardStats getStats() {
+        return dashboardService.getStatistics();  // JSON 데이터 반환
+    }
+}
+```
+
+위 구조에서:
+- `/dashboard` → HTML 페이지 렌더링
+- `/api/dashboard/stats` → 대시보드에서 사용할 통계 데이터를 JSON으로 제공
+
+## ResponseEntity와 함께 사용하기
+
+`@RestController`에서 HTTP 상태 코드와 헤더를 더 세밀하게 제어하려면 `ResponseEntity`를 사용합니다.
+
+```java
+@RestController
+@RequestMapping("/api/users")
+public class UserApiController {
+
+    @PostMapping
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User savedUser = userService.save(user);
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .header("Location", "/api/users/" + savedUser.getId())
+            .body(savedUser);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
+        return userService.findById(id)
+            .map(user -> ResponseEntity.ok(user))
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+```
+
+## 정리
+
+### @Controller
+- **용도**: 웹 페이지(View) 반환
+- **특징**: ViewResolver를 통해 템플릿 엔진과 연동
+- **사용처**: 서버 사이드 렌더링 웹 애플리케이션
+
+### @RestController
+- **용도**: RESTful API 데이터 반환
+- **특징**: @Controller + @ResponseBody의 조합, 자동 JSON/XML 변환
+- **사용처**: SPA, 모바일 앱 백엔드, 마이크로서비스 API
+
+### 핵심 차이점
+```plaintext
+@Controller → View Name → ViewResolver → HTML 응답
+@RestController → Object → MessageConverter → JSON/XML 응답
+```
+
+## 참고 자료
+
+- [Spring Framework 공식 문서 - Web MVC](https://docs.spring.io/spring-framework/reference/web/webmvc.html)
+- [Spring Boot Reference - Building REST APIs](https://spring.io/guides/tutorials/rest/)
+- [Baeldung - @Controller and @RestController](https://www.baeldung.com/spring-controller-vs-restcontroller)

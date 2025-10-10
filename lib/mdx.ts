@@ -102,7 +102,13 @@ export async function getPostBySlug(slug: string) {
       rehypePlugins: [
         rehypeSlug,
         rehypeCodeTitles,
-        rehypePrism,
+        [
+          rehypePrism,
+          {
+            ignoreMissing: true, // 언어가 없거나 지원하지 않는 언어는 무시
+            defaultLanguage: 'plaintext', // 기본 언어 설정
+          }
+        ],
         [
           rehypeAutolinkHeadings,
           {

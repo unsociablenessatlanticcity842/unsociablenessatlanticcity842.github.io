@@ -94,7 +94,13 @@ export default async function PostPage({ params }: PostPageProps) {
 
         <header className="space-y-4 pb-8">
           <h1 className="text-4xl font-bold">{post.title}</h1>
-          
+
+          {post.description && (
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              {post.description}
+            </p>
+          )}
+
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
