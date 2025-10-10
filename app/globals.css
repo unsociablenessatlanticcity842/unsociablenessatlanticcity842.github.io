@@ -115,7 +115,7 @@
   --tw-prose-body: hsl(var(--foreground));
   --tw-prose-headings: hsl(var(--foreground));
   --tw-prose-lead: hsl(var(--foreground));
-  --tw-prose-links: hsl(var(--primary));
+  --tw-prose-links: #2563EB; /* Blue in light mode */
   --tw-prose-bold: hsl(var(--foreground));
   --tw-prose-counters: hsl(var(--muted-foreground));
   --tw-prose-bullets: hsl(var(--muted-foreground));
@@ -128,6 +128,29 @@
   --tw-prose-pre-bg: hsl(var(--card));
   --tw-prose-th-borders: hsl(var(--border));
   --tw-prose-td-borders: hsl(var(--border));
+}
+
+/* Dark mode link color */
+.dark .prose {
+  --tw-prose-links: #60A5FA; /* Sky blue in dark mode */
+}
+
+/* Enhanced link styling for better visibility */
+.prose a {
+  color: #2563EB !important; /* Blue in light mode */
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* Dark mode link styling */
+.dark .prose a {
+  color: #60A5FA !important; /* Sky blue in dark mode */
 }
 
 /* Velog-style responsive typography */
