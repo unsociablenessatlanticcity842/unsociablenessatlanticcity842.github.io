@@ -12,6 +12,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PostTrackerWrapper } from "@/components/analytics/post-tracker-wrapper"
+import { BlogPostingStructuredData } from "@/components/structured-data"
 
 // Dynamic import for better performance
 const GiscusComments = dynamic(
@@ -44,7 +45,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const post = await getPostBySlug(params.slug)
-  
+
   if (!post) {
     return {}
   }
@@ -52,11 +53,15 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      canonical: `/posts/${params.slug}/`,
+    },
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
       publishedTime: post.date,
+      url: `https://kaameo.github.io/posts/${params.slug}/`,
     },
     twitter: {
       card: "summary_large_image",
@@ -75,6 +80,15 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <BlogLayout headings={post.headings}>
+      <BlogPostingStructuredData
+        title={post.title}
+        description={post.description}
+        date={post.date}
+        author={post.author}
+        slug={post.slug}
+        category={post.category}
+        tags={post.tags}
+      />
       <PostTrackerWrapper
         title={post.title}
         slug={post.slug}

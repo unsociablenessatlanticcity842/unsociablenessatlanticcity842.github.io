@@ -21,10 +21,15 @@ function getAllPosts(dir) {
 
         // Get file stats for lastmod date
         const stats = fs.statSync(fullPath);
+        const now = new Date();
+        const mtime = new Date(stats.mtime);
+
+        // Use the earlier of file modification time or current time (avoid future dates)
+        const lastmod = mtime > now ? now.toISOString() : mtime.toISOString();
 
         posts.push({
           slug,
-          lastmod: stats.mtime.toISOString(),
+          lastmod,
         });
       }
     }

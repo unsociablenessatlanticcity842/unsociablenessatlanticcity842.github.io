@@ -20,14 +20,17 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
   const allTags = getAllTags()
   const actualTag = slugToTag(params.tag, allTags)
-  
+
   if (!actualTag) {
     return {}
   }
-  
+
   return {
     title: `${actualTag} 태그`,
     description: `${actualTag} 태그가 포함된 포스트 목록`,
+    alternates: {
+      canonical: `/tags/${params.tag}/`,
+    },
   }
 }
 

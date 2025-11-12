@@ -31,10 +31,13 @@ function getCategoryFromSlug(slug: string): string {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const categoryName = getCategoryFromSlug(params.category)
-  
+
   return {
     title: `${categoryName} 카테고리`,
     description: `${categoryName} 카테고리의 포스트 목록`,
+    alternates: {
+      canonical: `/categories/${params.category}/`,
+    },
   }
 }
 
