@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   keywords: ['개발', '프로그래밍', 'Next.js', 'React', 'TypeScript'],
   authors: [{ name: 'Kaameo' }],
   creator: 'Kaameo',
+  icons: {
+    icon: '/favicon.svg',
+  },
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
