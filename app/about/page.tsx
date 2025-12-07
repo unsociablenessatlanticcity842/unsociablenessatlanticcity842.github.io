@@ -186,7 +186,7 @@ export default function AboutPage() {
             <img
               src="https://ghchart.rshah.org/kaameo"
               alt="GitHub Contributions"
-              className="w-full"
+              className="w-full dark:invert dark:hue-rotate-180"
             />
           </CardContent>
         </Card>
