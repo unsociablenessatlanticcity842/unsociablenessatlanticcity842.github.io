@@ -119,8 +119,8 @@ export const ERROR_MESSAGES = {
 export const DEBUG_CONFIG = {
   LOG_EVENTS: GA_DEBUG_MODE,
   LOG_PAGE_VIEWS: GA_DEBUG_MODE,
-  LOG_ERRORS: true,
-  LOG_CONSENT_CHANGES: true,
+  LOG_ERRORS: !GA_DEBUG_MODE, // Only log errors in production, not in dev
+  LOG_CONSENT_CHANGES: !GA_DEBUG_MODE,
   SHOW_DEBUG_PANEL: GA_DEBUG_MODE && GA_ENABLED_IN_DEV,
 } as const
 

@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 interface UseSearchKeyboardShortcutsProps {
   onSearchFocus?: () => void
   onClearFilters?: () => void
-  searchInputRef?: React.RefObject<HTMLInputElement>
+  searchInputRef?: React.RefObject<HTMLInputElement | null>
 }
 
 export function useSearchKeyboardShortcuts({

@@ -1,4 +1,5 @@
 export function tagToSlug(tag: string): string {
+  if (!tag) return ''
   return tag
     .toLowerCase()
     .replace(/[^\w\s가-힣-]/g, '-') // Replace special characters with hyphens

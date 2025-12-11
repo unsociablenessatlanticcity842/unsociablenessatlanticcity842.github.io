@@ -1,8 +1,8 @@
-import { ReactNode, isValidElement } from 'react'
+import { ReactNode, isValidElement, ReactElement } from 'react'
 
 /**
  * Recursively extract text content from React nodes
- * This handles various types of React nodes including strings, numbers, 
+ * This handles various types of React nodes including strings, numbers,
  * elements, fragments, and arrays
  */
 export function extractTextFromNode(node: ReactNode): string {
@@ -28,9 +28,10 @@ export function extractTextFromNode(node: ReactNode): string {
 
   // Handle React elements
   if (isValidElement(node)) {
+    const element = node as ReactElement<{ children?: ReactNode }>
     // If the element has children, extract text from them
-    if (node.props && node.props.children) {
-      return extractTextFromNode(node.props.children)
+    if (element.props && element.props.children) {
+      return extractTextFromNode(element.props.children)
     }
     return ''
   }
@@ -38,8 +39,9 @@ export function extractTextFromNode(node: ReactNode): string {
   // Handle objects (might be React Fragments or other objects)
   if (typeof node === 'object' && node !== null) {
     // Check if it's a React Fragment
-    if ('props' in node && node.props && 'children' in node.props) {
-      return extractTextFromNode(node.props.children)
+    const obj = node as { props?: { children?: ReactNode } }
+    if (obj.props && obj.props.children) {
+      return extractTextFromNode(obj.props.children)
     }
   }
 

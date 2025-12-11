@@ -39,7 +39,7 @@ export function Footer() {
             <span className="sr-only">GitHub</span>
           </Link>
           <Link
-            href="https://linkedin.com/in/jinsu-hong-916a42341/"
+            href="https://linkedin.com/in/jinsu-hong/"
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-foreground"

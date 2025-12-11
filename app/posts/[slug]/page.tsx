@@ -1,6 +1,5 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import dynamic from "next/dynamic"
 import { getAllPosts, getPostBySlug } from "@/lib/mdx"
 import { MDXContent } from "@/components/mdx-content"
 import { BlogLayout } from "@/components/blog-layout"
@@ -13,27 +12,12 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PostTrackerWrapper } from "@/components/analytics/post-tracker-wrapper"
 import { BlogPostingStructuredData } from "@/components/structured-data"
-
-// Dynamic import for better performance
-const GiscusComments = dynamic(
-  () => import("@/components/giscus-comments").then((mod) => mod.GiscusComments),
-  {
-    loading: () => (
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-8">댓글</h2>
-        <div className="animate-pulse">
-          <div className="h-32 bg-muted rounded-lg"></div>
-        </div>
-      </div>
-    ),
-    ssr: false,
-  }
-)
+import { GiscusCommentsWrapper } from "@/components/giscus-comments-wrapper"
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -44,7 +28,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug)
+  const { slug } = await params
+  const post = await getPostBySlug(slug)
 
   if (!post) {
     return {}
@@ -54,14 +39,14 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     title: post.title,
     description: post.description,
     alternates: {
-      canonical: `/posts/${params.slug}/`,
+      canonical: `/posts/${slug}/`,
     },
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
       publishedTime: post.date,
-      url: `https://kaameo.github.io/posts/${params.slug}/`,
+      url: `https://kaameo.github.io/posts/${slug}/`,
     },
     twitter: {
       card: "summary_large_image",
@@ -72,7 +57,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const post = await getPostBySlug(params.slug)
+  const { slug } = await params
+  const post = await getPostBySlug(slug)
 
   if (!post) {
     notFound()
@@ -171,7 +157,7 @@ export default async function PostPage({ params }: PostPageProps) {
         </Tabs>
 
         {/* 댓글 섹션 */}
-        <GiscusComments className="border-t pt-8" />
+        <GiscusCommentsWrapper className="border-t pt-8" />
       </article>
     </BlogLayout>
   )

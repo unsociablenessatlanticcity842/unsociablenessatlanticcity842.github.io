@@ -81,12 +81,12 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     <nav aria-label="목차" className="space-y-0.5">
       <h2 className="mb-3 text-base font-semibold">목차</h2>
       <ul className="space-y-0 text-xs" role="list">
-        {headings.map((heading) => {
+        {headings.map((heading, index) => {
           const isActive = activeHeading === heading.id
           const paddingLeft = (heading.level - 2) * 12 // Indent based on heading level
-          
+
           return (
-            <li key={heading.id}>
+            <li key={`${heading.id}-${index}`}>
               <a
                 href={`#${heading.id}`}
                 onClick={(e) => handleClick(e, heading.id)}

@@ -1,8 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
-import { serialize } from 'next-mdx-remote/serialize'
-import { MDXRemoteSerializeResult } from 'next-mdx-remote'
+import { compileMDX } from 'next-mdx-remote/rsc'
 import readingTime from 'reading-time'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
@@ -10,6 +9,8 @@ import rehypeCodeTitles from 'rehype-code-titles'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrism from 'rehype-prism-plus'
 import { extractHeadings, type Heading } from './extract-headings'
+import { ReactElement } from 'react'
+import { mdxComponents } from '@/components/mdx-components'
 
 const postsDirectory = path.join(process.cwd(), 'content/posts')
 
@@ -94,49 +95,53 @@ export async function getPostBySlug(slug: string) {
   // Read and process the file
   const fileContents = fs.readFileSync(fileInfo.path, 'utf8')
   const { data, content } = matter(fileContents)
-  
-  // Serialize MDX content
-  const mdxSource = await serialize(content, {
-    mdxOptions: {
-      remarkPlugins: [remarkGfm],
-      rehypePlugins: [
-        rehypeSlug,
-        rehypeCodeTitles,
-        [
-          rehypePrism,
-          {
-            ignoreMissing: true, // 언어가 없거나 지원하지 않는 언어는 무시
-            defaultLanguage: 'plaintext', // 기본 언어 설정
-          }
-        ],
-        [
-          rehypeAutolinkHeadings,
-          {
-            properties: {
-              className: ['anchor'],
+
+  // Compile MDX content using RSC API
+  const { content: mdxContent } = await compileMDX({
+    source: content,
+    components: mdxComponents,
+    options: {
+      mdxOptions: {
+        remarkPlugins: [remarkGfm],
+        rehypePlugins: [
+          rehypeSlug,
+          rehypeCodeTitles,
+          [
+            rehypePrism,
+            {
+              ignoreMissing: true,
+              defaultLanguage: 'plaintext',
+            }
+          ],
+          [
+            rehypeAutolinkHeadings,
+            {
+              properties: {
+                className: ['anchor'],
+              },
             },
-          },
+          ],
         ],
-      ],
+      },
     },
   })
-  
+
   const readTime = readingTime(content)
   const headings = extractHeadings(content)
-  
+
   // Use category from frontmatter if available, otherwise from folder structure
   const category = data.category || fileInfo.category
-  
+
   return {
     slug: realSlug,
-    content: mdxSource,
+    content: mdxContent,
     rawContent: content,
     readingTime: readTime.text,
     wordCount: readTime.words,
     headings,
     category,
     ...(data as PostMatter),
-  } as Post & { content: MDXRemoteSerializeResult, rawContent: string }
+  } as Post & { content: ReactElement, rawContent: string }
 }
 
 export function getAllPosts(): Post[] {

@@ -4,9 +4,9 @@ import { getPostsByCategory, getAllCategories } from "@/lib/mdx"
 import { PostCard } from "@/components/post-card"
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     category: string
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -20,31 +20,33 @@ export async function generateStaticParams() {
 function getCategoryFromSlug(slug: string): string {
   const categories = getAllCategories()
   const normalizedSlug = slug.toLowerCase()
-  
+
   // Find the category that matches when lowercased and spaces replaced with hyphens
   const matchedCategory = categories.find(
     cat => cat.toLowerCase().replace(/\s+/g, '-') === normalizedSlug
   )
-  
+
   return matchedCategory || slug
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const categoryName = getCategoryFromSlug(params.category)
+  const { category } = await params
+  const categoryName = getCategoryFromSlug(category)
 
   return {
     title: `${categoryName} 카테고리`,
     description: `${categoryName} 카테고리의 포스트 목록`,
     alternates: {
-      canonical: `/categories/${params.category}/`,
+      canonical: `/categories/${category}/`,
     },
   }
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
-  const categoryName = getCategoryFromSlug(params.category)
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { category } = await params
+  const categoryName = getCategoryFromSlug(category)
   const posts = getPostsByCategory(categoryName)
-  
+
   if (posts.length === 0) {
     notFound()
   }

@@ -5,9 +5,9 @@ import { PostCard } from "@/components/post-card"
 import { tagToSlug, slugToTag } from "@/lib/slug"
 
 interface TagPageProps {
-  params: {
+  params: Promise<{
     tag: string
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -18,8 +18,9 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
+  const { tag } = await params
   const allTags = getAllTags()
-  const actualTag = slugToTag(params.tag, allTags)
+  const actualTag = slugToTag(tag, allTags)
 
   if (!actualTag) {
     return {}
@@ -29,21 +30,22 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
     title: `${actualTag} 태그`,
     description: `${actualTag} 태그가 포함된 포스트 목록`,
     alternates: {
-      canonical: `/tags/${params.tag}/`,
+      canonical: `/tags/${tag}/`,
     },
   }
 }
 
-export default function TagPage({ params }: TagPageProps) {
+export default async function TagPage({ params }: TagPageProps) {
+  const { tag } = await params
   const allTags = getAllTags()
-  const actualTag = slugToTag(params.tag, allTags)
-  
+  const actualTag = slugToTag(tag, allTags)
+
   if (!actualTag) {
     notFound()
   }
-  
+
   const posts = getPostsByTag(actualTag)
-  
+
   if (posts.length === 0) {
     notFound()
   }

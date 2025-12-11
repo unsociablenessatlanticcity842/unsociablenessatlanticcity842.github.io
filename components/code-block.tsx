@@ -1,10 +1,9 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Check, Copy, ChevronDown, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { extractTextFromNode } from "@/lib/extract-text-from-node"
 
 interface CodeBlockProps {
   children: React.ReactNode
@@ -14,20 +13,32 @@ interface CodeBlockProps {
   title?: string
 }
 
-export function CodeBlock({ 
-  children, 
-  className = "", 
+export function CodeBlock({
+  children,
+  className = "",
   showLineNumbers = true,
   collapsible = false,
-  title 
+  title
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [lineCount, setLineCount] = useState(0)
   const codeRef = useRef<HTMLPreElement>(null)
 
   // Extract language from className
   const languageMatch = className.match(/language-(\w+)/)
   const language = languageMatch ? languageMatch[1] : "plaintext"
+
+  // Calculate line count from rendered DOM for accuracy
+  useEffect(() => {
+    if (codeRef.current) {
+      const codeText = codeRef.current.textContent || ""
+      const lines = codeText.split('\n')
+      // Remove the last empty line if it exists (from trailing newline)
+      const count = lines[lines.length - 1] === '' ? lines.length - 1 : lines.length
+      setLineCount(count)
+    }
+  }, [children])
 
   const handleCopy = async () => {
     if (codeRef.current) {
@@ -37,12 +48,6 @@ export function CodeBlock({
       setTimeout(() => setCopied(false), 2000)
     }
   }
-
-  // Calculate line numbers - extract text from React nodes
-  const codeString = extractTextFromNode(children)
-  const lines = codeString.split('\n')
-  // Remove the last empty line if it exists (from trailing newline)
-  const lineNumbers = lines[lines.length - 1] === '' ? lines.length - 1 : lines.length
 
   return (
     <div className="group relative my-2 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 backdrop-blur-sm">
@@ -105,9 +110,9 @@ export function CodeBlock({
         <div className="relative overflow-x-auto bg-transparent">
           <div className="flex">
             {/* Line Numbers */}
-            {showLineNumbers && lineNumbers > 0 && (
+            {showLineNumbers && lineCount > 0 && (
               <div className="select-none border-r border-border/50 bg-muted/10 px-2 py-2 text-right">
-                {Array.from({ length: lineNumbers }, (_, i) => (
+                {Array.from({ length: lineCount }, (_, i) => (
                   <div 
                     key={i + 1} 
                     className="text-xs leading-6 text-muted-foreground/70 font-mono"
