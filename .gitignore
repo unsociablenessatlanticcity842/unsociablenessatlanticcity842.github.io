@@ -51,3 +51,6 @@ CLAUDE.md
 content/posts-backup/
 
 lib/mdx.ts.backup
+
+# Personal interview prep docs
+docs/FRONTEND_INTERVIEW_QUESTIONS.md

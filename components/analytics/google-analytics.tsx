@@ -85,6 +85,9 @@ export function GoogleAnalytics({ nonce }: GoogleAnalyticsProps) {
           // Initialize GA4 after script loads
           initializeGA4()
 
+          // Re-sync consent state with gtag now that it's initialized
+          initializeConsent()
+
           // Track initial page timing after GA4 is ready
           if (document.readyState === 'complete') {
             trackPageTiming()

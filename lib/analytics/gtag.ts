@@ -131,11 +131,14 @@ export function initializeGA4(config?: Partial<GtagConfig>) {
 export function updateConsent(consentParams: ConsentParams) {
   try {
     if (!isGtagAvailable()) {
-      throw new Error(ERROR_MESSAGES.GA_NOT_INITIALIZED)
+      // Silently skip if gtag is not ready yet
+      // This can happen during initialization before GA script loads
+      debugLog('Skipping consent update - gtag not ready', consentParams)
+      return
     }
-    
+
     window.gtag('consent', 'update', consentParams)
-    
+
     debugLog('Consent updated', consentParams)
   } catch (error) {
     trackError(error as Error, 'consent')
