@@ -6,16 +6,15 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { GlobalSidebar } from '@/components/global-sidebar'
 import { SkipToContent } from '@/components/skip-to-content'
-import { GoogleAnalyticsWrapper } from '@/components/analytics/google-analytics-wrapper'
-import { CookieConsent } from '@/components/analytics/cookie-consent'
+import { GoogleAnalytics } from '@/components/analytics/analytics'
 import { getCategoriesWithCount, getTagsWithCount } from '@/lib/posts-data'
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
 })
 
-const jetbrainsMono = JetBrains_Mono({ 
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
 })
@@ -91,8 +90,7 @@ export default function RootLayout({
             </div>
             <Footer />
           </div>
-          <GoogleAnalyticsWrapper />
-          <CookieConsent />
+          <GoogleAnalytics />
         </ThemeProvider>
       </body>
     </html>

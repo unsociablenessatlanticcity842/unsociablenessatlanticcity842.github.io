@@ -10,7 +10,6 @@ import { tagToSlug } from "@/lib/slug"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PostTrackerWrapper } from "@/components/analytics/post-tracker-wrapper"
 import { BlogPostingStructuredData } from "@/components/structured-data"
 import { GiscusCommentsWrapper } from "@/components/giscus-comments-wrapper"
 
@@ -74,15 +73,6 @@ export default async function PostPage({ params }: PostPageProps) {
         slug={post.slug}
         category={post.category}
         tags={post.tags}
-      />
-      <PostTrackerWrapper
-        title={post.title}
-        slug={post.slug}
-        category={post.category}
-        tags={post.tags}
-        author={post.author}
-        readingTime={post.readingTime ? parseInt(post.readingTime) : undefined}
-        wordCount={post.wordCount}
       />
       <article className="py-10">
         <Link href="/posts">
