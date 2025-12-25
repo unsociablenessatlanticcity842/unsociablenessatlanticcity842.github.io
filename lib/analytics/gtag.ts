@@ -155,23 +155,26 @@ export function trackPageView(url?: string, title?: string) {
       debugLog('Skipping page view - bot or DNT detected')
       return
     }
-    
+
     if (!isGtagAvailable()) {
-      throw new Error(ERROR_MESSAGES.GA_NOT_INITIALIZED)
+      // Silently skip if gtag is not ready yet
+      // This can happen during route changes before GA script loads
+      debugLog('Skipping page view - gtag not ready')
+      return
     }
-    
+
     const pageUrl = url || window.location.pathname + window.location.search
     const pageTitle = title || document.title
-    
+
     const params: GtagConfig = {
       page_path: sanitizeUrl(pageUrl),
       page_title: pageTitle,
       page_location: sanitizeUrl(window.location.href),
       ...DEFAULT_EVENT_PARAMS,
     }
-    
+
     window.gtag('event', 'page_view', params)
-    
+
     if (DEBUG_CONFIG.LOG_PAGE_VIEWS) {
       debugLog('Page view tracked', params)
     }
@@ -190,28 +193,30 @@ export function trackEvent(eventName: string, parameters?: BlogEventParams) {
       debugLog('Skipping event - bot or DNT detected')
       return
     }
-    
+
     if (!isGtagAvailable()) {
-      throw new Error(ERROR_MESSAGES.GA_NOT_INITIALIZED)
+      // Silently skip if gtag is not ready yet
+      debugLog('Skipping event - gtag not ready')
+      return
     }
-    
+
     if (!eventName) {
       throw new Error(ERROR_MESSAGES.INVALID_EVENT_NAME)
     }
-    
+
     // Format and sanitize parameters
-    const sanitizedParams = parameters 
+    const sanitizedParams = parameters
       ? sanitizeObject(formatEventParams(parameters))
       : {}
-    
+
     // Add default parameters
     const finalParams = {
       ...DEFAULT_EVENT_PARAMS,
       ...sanitizedParams,
     }
-    
+
     window.gtag('event', eventName, finalParams)
-    
+
     debugLog(`Event tracked: ${eventName}`, finalParams)
   } catch (error) {
     trackError(error as Error, 'tracking')
@@ -224,13 +229,14 @@ export function trackEvent(eventName: string, parameters?: BlogEventParams) {
 export function setUserProperties(properties: Record<string, any>) {
   try {
     if (!isGtagAvailable()) {
-      throw new Error(ERROR_MESSAGES.GA_NOT_INITIALIZED)
+      debugLog('Skipping user properties - gtag not ready')
+      return
     }
-    
+
     const sanitizedProperties = sanitizeObject(properties)
-    
+
     window.gtag('set', 'user_properties', sanitizedProperties)
-    
+
     debugLog('User properties set', sanitizedProperties)
   } catch (error) {
     trackError(error as Error, 'tracking')
@@ -243,9 +249,10 @@ export function setUserProperties(properties: Record<string, any>) {
 export function setUserId(userId: string | null) {
   try {
     if (!isGtagAvailable()) {
-      throw new Error(ERROR_MESSAGES.GA_NOT_INITIALIZED)
+      debugLog('Skipping user ID - gtag not ready')
+      return
     }
-    
+
     if (userId) {
       window.gtag('set', { user_id: userId })
       debugLog('User ID set', { userId })
@@ -270,9 +277,10 @@ export function trackTiming(
 ) {
   try {
     if (!isGtagAvailable()) {
-      throw new Error(ERROR_MESSAGES.GA_NOT_INITIALIZED)
+      debugLog('Skipping timing - gtag not ready')
+      return
     }
-    
+
     const params = {
       name,
       value: Math.round(value), // GA4 expects integer milliseconds
@@ -280,9 +288,9 @@ export function trackTiming(
       event_label: label,
       ...DEFAULT_EVENT_PARAMS,
     }
-    
+
     window.gtag('event', 'timing_complete', params)
-    
+
     debugLog('Timing tracked', params)
   } catch (error) {
     trackError(error as Error, 'tracking')
@@ -295,17 +303,18 @@ export function trackTiming(
 export function trackException(description: string, fatal: boolean = false) {
   try {
     if (!isGtagAvailable()) {
-      throw new Error(ERROR_MESSAGES.GA_NOT_INITIALIZED)
+      debugLog('Skipping exception - gtag not ready')
+      return
     }
-    
+
     const params = {
       description: sanitizeObject({ description }).description || description,
       fatal,
       ...DEFAULT_EVENT_PARAMS,
     }
-    
+
     window.gtag('event', 'exception', params)
-    
+
     debugLog('Exception tracked', params)
   } catch (error) {
     trackError(error as Error, 'tracking')
