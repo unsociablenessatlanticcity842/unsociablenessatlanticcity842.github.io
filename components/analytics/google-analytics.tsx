@@ -31,17 +31,10 @@ export function GoogleAnalytics({ nonce }: GoogleAnalyticsProps) {
     return () => window.removeEventListener('consentUpdate', handleConsentUpdate)
   }, [])
 
-  // Initialize GA4 when consent is given
+  // Initialize dataLayer when consent is given
   useEffect(() => {
     if (isConsentGiven && GA_MEASUREMENT_ID) {
       initializeDataLayer()
-      
-      // Track initial page timing
-      if (document.readyState === 'complete') {
-        trackPageTiming()
-      } else {
-        window.addEventListener('load', trackPageTiming, { once: true })
-      }
     }
   }, [isConsentGiven])
 
@@ -91,6 +84,13 @@ export function GoogleAnalytics({ nonce }: GoogleAnalyticsProps) {
         onLoad={() => {
           // Initialize GA4 after script loads
           initializeGA4()
+
+          // Track initial page timing after GA4 is ready
+          if (document.readyState === 'complete') {
+            trackPageTiming()
+          } else {
+            window.addEventListener('load', trackPageTiming, { once: true })
+          }
         }}
         onError={(e) => {
           console.error('Failed to load Google Analytics:', e)
