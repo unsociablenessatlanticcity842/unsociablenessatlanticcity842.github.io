@@ -32,13 +32,12 @@ interface Content {
 
 const content: Record<Language, Content> = {
   en: {
-    tagline: "Hi there! I'm Hong Jinsu 👋",
-    intro: "I'm a passionate developer who loves learning new things and applying them in creative ways. My main interests are in backend development, full-stack web development, network security, cloud infrastructure, and creating meaningful services for users.",
+    tagline: "Hi there!",
+    intro: "I'm a passionate developer who loves learning new things and applying them in creative ways. My main interests are in backend development, full-stack web development, cloud infrastructure, and creating meaningful services for users.",
     about: {
       title: "About Me",
       content: [
         "I believe technology creates real value when it solves actual problems.",
-        "I'm particularly interested in large-scale system design that considers security and stability,",
         "and I aspire to become a developer who creates services that truly improve users' lives."
       ],
       competencies: {
@@ -46,7 +45,6 @@ const content: Record<Language, Content> = {
         items: [
           "Full-stack web development and real-time system development",
           "Cloud infrastructure design and container orchestration",
-          "Network security and monitoring system development",
           "Enterprise-level system architecture design"
         ]
       }
@@ -57,13 +55,12 @@ const content: Record<Language, Content> = {
     }
   },
   ko: {
-    tagline: "안녕하세요! 홍진수입니다 👋",
-    intro: "새로운 것을 배우고 창의적으로 적용하는 것을 좋아하는 개발자입니다. 주요 관심사는 백엔드 개발, 풀스택 웹 개발, 네트워크 보안, 클라우드 인프라, 그리고 사용자에게 의미 있는 서비스를 만드는 것입니다.",
+    tagline: "안녕하세요!",
+    intro: "새로운 것을 배우고 창의적으로 적용하는 것을 좋아하는 개발자입니다. 주요 관심사는 백엔드 개발, 풀스택 웹 개발, 클라우드 인프라, 그리고 사용자에게 의미 있는 서비스를 만드는 것입니다.",
     about: {
       title: "About Me",
       content: [
         "기술은 실제 문제를 해결할 때 진정한 가치를 만든다고 믿습니다.",
-        "특히 보안과 안정성을 고려한 대규모 시스템 설계에 관심이 많으며,",
         "사용자의 삶을 진정으로 개선하는 서비스를 만드는 개발자가 되고 싶습니다."
       ],
       competencies: {
@@ -71,7 +68,6 @@ const content: Record<Language, Content> = {
         items: [
           "풀스택 웹 개발 및 실시간 시스템 구축",
           "클라우드 인프라 설계 및 컨테이너 오케스트레이션",
-          "네트워크 보안 및 모니터링 시스템 구축",
           "엔터프라이즈급 시스템 아키텍처 설계"
         ]
       }
@@ -116,13 +112,13 @@ export default function AboutPage() {
           <CardHeader>
             <CardTitle>{t.about.title}</CardTitle>
             <div className="flex flex-wrap gap-4 pt-4">
-              <a href="/resume.pdf" download>
+              <a href="/hong-jinsu_resume.pdf" download>
                 <Button variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4" />
                   {lang === "ko" ? "이력서" : "Resume"}
                 </Button>
               </a>
-              <a href="/work_experience.pdf" download>
+              <a href="/hong-jinsu_work_experience.pdf" download>
                 <Button variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4" />
                   {lang === "ko" ? "경력기술서" : "Career Summary"}
