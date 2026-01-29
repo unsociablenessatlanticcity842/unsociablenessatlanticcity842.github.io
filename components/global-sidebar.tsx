@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils"
 import { tagToSlug } from "@/lib/slug"
 import { Folder, Tag, FileText, Home, BookOpen, User } from "lucide-react"
+import { AdUnit } from "@/components/analytics/adsense"
 
 interface GlobalSidebarProps {
   categories: Array<{
@@ -151,6 +152,15 @@ export function GlobalSidebar({ categories, tags }: GlobalSidebarProps) {
             </Link>
           )}
         </div>
+      </div>
+
+      {/* 사이드바 광고 */}
+      <div className="border-t pt-4">
+        <AdUnit
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
+          format="vertical"
+          className="w-full"
+        />
       </div>
     </nav>
   )

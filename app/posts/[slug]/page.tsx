@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BlogPostingStructuredData } from "@/components/structured-data"
 import { GiscusCommentsWrapper } from "@/components/giscus-comments-wrapper"
+import { AdUnit } from "@/components/analytics/adsense"
 
 interface PostPageProps {
   params: Promise<{
@@ -119,6 +120,13 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         </header>
 
+        {/* 상단 광고 */}
+        <AdUnit
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_TOP || ''}
+          format="horizontal"
+          className="my-6"
+        />
+
         <Tabs defaultValue="preview" className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
             <TabsTrigger value="preview" className="flex items-center gap-2">
@@ -145,6 +153,13 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* 하단 광고 */}
+        <AdUnit
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
+          format="auto"
+          className="my-8"
+        />
 
         {/* 댓글 섹션 */}
         <GiscusCommentsWrapper className="border-t pt-8" />

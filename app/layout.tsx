@@ -7,6 +7,7 @@ import { Footer } from '@/components/footer'
 import { GlobalSidebar } from '@/components/global-sidebar'
 import { SkipToContent } from '@/components/skip-to-content'
 import { GoogleAnalytics } from '@/components/analytics/analytics'
+import { GoogleAdSense } from '@/components/analytics/adsense'
 import { getCategoriesWithCount, getTagsWithCount } from '@/lib/posts-data'
 
 const inter = Inter({
@@ -90,6 +91,7 @@ export default function RootLayout({
             </div>
             <Footer />
           </div>
+          <GoogleAdSense />
           <GoogleAnalytics />
         </ThemeProvider>
       </body>
