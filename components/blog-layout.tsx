@@ -1,24 +1,21 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { TableOfContents } from "@/components/table-of-contents"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { List } from "lucide-react"
+import * as React from 'react'
+import { TableOfContents } from '@/components/table-of-contents'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
+import { List } from 'lucide-react'
 
-import type { Heading } from "@/lib/extract-headings"
+import type { Heading } from '@/lib/extract-headings'
 
 interface BlogLayoutProps {
   header?: React.ReactNode
   children: React.ReactNode
   headings?: Heading[]
+  leftSidebar?: React.ReactNode
 }
 
-export function BlogLayout({
-  header,
-  children,
-  headings = [],
-}: BlogLayoutProps) {
+export function BlogLayout({ header, children, headings = [], leftSidebar }: BlogLayoutProps) {
   const [tocOpen, setTocOpen] = React.useState(false)
   const hasToc = headings.length > 0
 
@@ -53,15 +50,19 @@ export function BlogLayout({
 
       {/* Content + TOC */}
       <div className="flex justify-center px-4 md:px-6 pt-16">
-        {/* Spacer - mirrors TOC width to keep main centered */}
+        {/* Left Sidebar - ad or spacer to keep main centered */}
         {hasToc && (
-          <div className="hidden xl:block w-[220px] shrink-0 mr-10" />
+          <aside className="hidden xl:block w-[220px] shrink-0 mr-10">
+            {leftSidebar && (
+              <div className="sticky top-20">
+                {leftSidebar}
+              </div>
+            )}
+          </aside>
         )}
 
         {/* Main Content - centered */}
-        <main className="min-w-0 w-full max-w-[800px]">
-          {children}
-        </main>
+        <main className="min-w-0 w-full max-w-[800px]">{children}</main>
 
         {/* Desktop TOC - sticky, scrolls with content */}
         {hasToc && (

@@ -1,18 +1,19 @@
-import { Metadata } from "next"
-import { notFound } from "next/navigation"
-import { getAllPosts, getPostBySlug } from "@/lib/mdx"
-import { MDXContent } from "@/components/mdx-content"
-import { BlogLayout } from "@/components/blog-layout"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock } from "lucide-react"
-import { formatDate } from "@/lib/utils"
-import { tagToSlug } from "@/lib/slug"
-import Link from "next/link"
-import Image from "next/image"
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { getAllPosts, getPostBySlug } from '@/lib/mdx'
+import { MDXContent } from '@/components/mdx-content'
+import { BlogLayout } from '@/components/blog-layout'
+import { Badge } from '@/components/ui/badge'
+import { Calendar, Clock } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
+import { tagToSlug } from '@/lib/slug'
+import Link from 'next/link'
+import Image from 'next/image'
 
-import { BlogPostingStructuredData } from "@/components/structured-data"
-import { GiscusCommentsWrapper } from "@/components/giscus-comments-wrapper"
-import { AdUnit } from "@/components/analytics/adsense"
+import { BlogPostingStructuredData } from '@/components/structured-data'
+import { GiscusCommentsWrapper } from '@/components/giscus-comments-wrapper'
+import { AdUnit } from '@/components/analytics/adsense'
+import { RelatedPosts } from '@/components/related-posts'
 
 interface PostPageProps {
   params: Promise<{
@@ -44,12 +45,12 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     openGraph: {
       title: post.title,
       description: post.description,
-      type: "article",
+      type: 'article',
       publishedTime: post.date,
       url: `https://kaameo.github.io/posts/${slug}/`,
     },
     twitter: {
-      card: "summary_large_image",
+      card: 'summary_large_image',
       title: post.title,
       description: post.description,
     },
@@ -67,6 +68,13 @@ export default async function PostPage({ params }: PostPageProps) {
   return (
     <BlogLayout
       headings={post.headings}
+      leftSidebar={
+        <AdUnit
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
+          format="vertical"
+          className="w-full"
+        />
+      }
       header={
         <>
           <BlogPostingStructuredData
@@ -102,15 +110,11 @@ export default async function PostPage({ params }: PostPageProps) {
               </h1>
 
               {post.description && (
-                <p className="mt-4 text-lg text-white/80 leading-relaxed">
-                  {post.description}
-                </p>
+                <p className="mt-4 text-lg text-white/80 leading-relaxed">{post.description}</p>
               )}
 
               <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-white/70">
-                {post.author && (
-                  <span className="font-medium text-white">{post.author}</span>
-                )}
+                {post.author && <span className="font-medium text-white">{post.author}</span>}
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3.5 w-3.5" />
                   {formatDate(post.date)}
@@ -136,7 +140,10 @@ export default async function PostPage({ params }: PostPageProps) {
           <div className="mt-12 pt-8 border-t flex flex-wrap gap-2">
             {post.tags.map((tag) => (
               <Link key={tag} href={`/tags/${tagToSlug(tag)}`}>
-                <Badge variant="outline" className="rounded-full text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors">
+                <Badge
+                  variant="outline"
+                  className="rounded-full text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
+                >
                   {tag}
                 </Badge>
               </Link>
@@ -144,15 +151,18 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         )}
 
-        {/* Ad between content and comments */}
+        {/* Ad - mobile/tablet only (desktop shows in left sidebar) */}
         <AdUnit
           slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
           format="auto"
-          className="my-8"
+          className="my-8 xl:hidden"
         />
 
         {/* Comments */}
         <GiscusCommentsWrapper className="border-t pt-8 mt-12" />
+
+        {/* Related Posts */}
+        <RelatedPosts currentSlug={slug} />
       </article>
     </BlogLayout>
   )
