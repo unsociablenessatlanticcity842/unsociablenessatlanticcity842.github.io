@@ -4,11 +4,9 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { GlobalSidebar } from '@/components/global-sidebar'
 import { SkipToContent } from '@/components/skip-to-content'
 import { GoogleAnalytics } from '@/components/analytics/analytics'
 import { GoogleAdSense } from '@/components/analytics/adsense'
-import { getCategoriesWithCount, getTagsWithCount } from '@/lib/posts-data'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -64,9 +62,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const categories = getCategoriesWithCount()
-  const tags = getTagsWithCount()
-
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
@@ -78,17 +73,10 @@ export default function RootLayout({
         >
           <SkipToContent />
           <div className="relative flex min-h-screen flex-col">
-            <Header categories={categories} tags={tags} />
-            <div className="flex-1 flex">
-              {/* Global sidebar - hidden on mobile */}
-              <div className="hidden lg:block">
-                <GlobalSidebar categories={categories} tags={tags} />
-              </div>
-              {/* Main content area with left margin on desktop */}
-              <main className="flex-1 lg:ml-[250px]" id="main-content">
-                {children}
-              </main>
-            </div>
+            <Header />
+            <main className="flex-1" id="main-content">
+              {children}
+            </main>
             <Footer />
           </div>
           <GoogleAdSense />

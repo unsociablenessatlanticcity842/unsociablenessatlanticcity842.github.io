@@ -51,19 +51,27 @@ export function extractHeadings(content: string): Heading[] {
   // Step 2: Extract headings from cleaned content
   const headings: Heading[] = []
   const headingRegex = /^(#{1,6})\s+(.+)$/gm
+  const idCounts = new Map<string, number>()
   let match
 
   while ((match = headingRegex.exec(contentWithoutCodeBlocks)) !== null) {
     const level = match[1].length
     const text = match[2].trim()
-    
+
     // Generate ID from text with improved sanitization
-    const id = generateHeadingId(text)
-    
+    let id = generateHeadingId(text)
+
     // Skip empty IDs (edge case: heading with only special characters)
-    if (id) {
-      headings.push({ id, text, level })
+    if (!id) continue
+
+    // Handle duplicate IDs (same logic as rehype-slug)
+    const count = idCounts.get(id) ?? 0
+    idCounts.set(id, count + 1)
+    if (count > 0) {
+      id = `${id}-${count}`
     }
+
+    headings.push({ id, text, level })
   }
 
   return headings

@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 40 23% 97%; /* Warm off-white #FAFAF8 */
-    --foreground: 0 0% 13%; /* Soft black #212121 */
-    --card: 60 9% 98%; /* Very light warm gray #FCFCFB */
-    --card-foreground: 0 0% 13%;
-    --popover: 60 9% 98%;
-    --popover-foreground: 0 0% 13%;
-    --primary: 0 0% 25%; /* Dark gray #404040 */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96%; /* Light gray #F5F5F5 */
-    --secondary-foreground: 0 0% 15%;
-    --muted: 0 0% 95%; /* Soft gray #F2F2F2 */
-    --muted-foreground: 0 0% 45%; /* Medium gray #737373 */
-    --accent: 0 0% 93%; /* Light accent gray #EDEDED */
-    --accent-foreground: 0 0% 13%;
-    --destructive: 0 72% 51%; /* Softer red #E74C3C */
+    --background: 0 0% 100%; /* Pure white #ffffff */
+    --foreground: 0 0% 14%; /* #242424 */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 14%;
+    --primary: 231 64% 55%; /* dev.to blue #3b49df */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%; /* #f5f5f5 */
+    --secondary-foreground: 0 0% 14%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 42%; /* #6b6b6b */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 14%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%; /* Soft border #E5E5E5 */
-    --input: 0 0% 91%; /* Input background #E8E8E8 */
-    --ring: 0 0% 40%; /* Focus ring #666666 */
+    --border: 0 0% 94%; /* #f0f0f0 */
+    --input: 0 0% 94%;
+    --ring: 231 64% 55%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 0 0% 9%; /* Soft dark #171717 */
-    --foreground: 0 0% 90%; /* Softer white #E5E5E5 */
-    --card: 0 0% 12%; /* Elevated dark #1F1F1F */
+    --background: 0 0% 7%; /* #121212 */
+    --foreground: 0 0% 90%; /* #e5e5e5 */
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 90%;
-    --popover: 0 0% 15%; /* Higher elevation #262626 */
+    --popover: 0 0% 12%;
     --popover-foreground: 0 0% 90%;
-    --primary: 0 0% 75%; /* Light gray #BFBFBF */
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 20%; /* Softer dark gray #333333 */
+    --primary: 231 64% 60%; /* Lighter blue for dark mode */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 25%; /* Muted gray #404040 */
-    --muted-foreground: 0 0% 65%; /* Softer muted text #A6A6A6 */
-    --accent: 0 0% 30%; /* Accent gray #4D4D4D */
-    --accent-foreground: 0 0% 95%;
-    --destructive: 0 65% 48%; /* Softer red #C9302C */
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 90%;
+    --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 95%;
-    --border: 0 0% 18%; /* Subtle border #2E2E2E */
-    --input: 0 0% 20%; /* Input background #333333 */
-    --ring: 0 0% 60%; /* Focus ring #999999 */
+    --border: 0 0% 10%; /* #1a1a1a */
+    --input: 0 0% 16%;
+    --ring: 231 64% 60%;
   }
 }
 
@@ -110,12 +110,12 @@
   }
 }
 
-/* Prose customization - Velog style */
+/* Prose customization - Medium style */
 .prose {
   --tw-prose-body: hsl(var(--foreground));
   --tw-prose-headings: hsl(var(--foreground));
   --tw-prose-lead: hsl(var(--foreground));
-  --tw-prose-links: #2563EB; /* Blue in light mode */
+  --tw-prose-links: hsl(var(--primary));
   --tw-prose-bold: hsl(var(--foreground));
   --tw-prose-counters: hsl(var(--muted-foreground));
   --tw-prose-bullets: hsl(var(--muted-foreground));
@@ -132,12 +132,12 @@
 
 /* Dark mode link color */
 .dark .prose {
-  --tw-prose-links: #60A5FA; /* Sky blue in dark mode */
+  --tw-prose-links: hsl(var(--primary));
 }
 
-/* Enhanced link styling for better visibility */
+/* Enhanced link styling */
 .prose a {
-  color: #2563EB !important; /* Blue in light mode */
+  color: hsl(var(--primary)) !important;
   text-decoration: none;
   transition: all 0.2s ease;
 }
@@ -148,26 +148,21 @@
   text-underline-offset: 2px;
 }
 
-/* Dark mode link styling */
-.dark .prose a {
-  color: #60A5FA !important; /* Sky blue in dark mode */
-}
-
-/* Velog-style responsive typography */
+/* Responsive typography */
 @media (max-width: 768px) {
   .prose p,
   .prose li {
     font-size: 17px;
-    line-height: 1.8;
+    line-height: 1.7;
   }
   .prose h1 {
-    font-size: 2rem;
-  }
-  .prose h2 {
     font-size: 1.75rem;
   }
+  .prose h2 {
+    font-size: 1.5rem;
+  }
   .prose h3 {
-    font-size: 1.375rem;
+    font-size: 1.25rem;
   }
 }
 

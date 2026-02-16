@@ -3,10 +3,8 @@
 import { useState, useMemo, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Post } from "@/lib/mdx"
-import { PostCard } from "@/components/post-card"
 import { HorizontalPostCard } from "@/components/horizontal-post-card"
 import { SearchBar } from "@/components/search-bar"
-import { LayoutToggle } from "@/components/layout-toggle"
 import { filterPosts } from "@/lib/search-utils"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -17,13 +15,10 @@ interface PostsSearchProps {
 export function PostsSearch({ posts }: PostsSearchProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [layout, setLayout] = useState<"grid" | "horizontal">("horizontal") // Default to horizontal
   const searchParams = useSearchParams()
 
-  // Check if we should auto-focus search on mount
   useEffect(() => {
     if (searchParams.get('search') === 'true') {
-      // Small delay to ensure the search input is rendered
       const timer = setTimeout(() => {
         const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement
         if (searchInput) {
@@ -35,21 +30,6 @@ export function PostsSearch({ posts }: PostsSearchProps) {
     }
   }, [searchParams])
 
-  // Load saved layout preference
-  useEffect(() => {
-    const savedLayout = localStorage.getItem("postsLayout") as "grid" | "horizontal" | null
-    if (savedLayout) {
-      setLayout(savedLayout)
-    }
-  }, [])
-
-  // Save layout preference
-  const handleLayoutChange = (newLayout: "grid" | "horizontal") => {
-    setLayout(newLayout)
-    localStorage.setItem("postsLayout", newLayout)
-  }
-
-  // Extract all unique tags
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>()
     posts.forEach(post => {
@@ -58,7 +38,6 @@ export function PostsSearch({ posts }: PostsSearchProps) {
     return Array.from(tagSet).sort()
   }, [posts])
 
-  // Filter posts based on search term and selected tags
   const filteredPosts = useMemo(() => {
     return filterPosts(posts, searchTerm, selectedTags)
   }, [posts, searchTerm, selectedTags])
@@ -66,7 +45,7 @@ export function PostsSearch({ posts }: PostsSearchProps) {
   const hasActiveFilters = searchTerm.length > 0 || selectedTags.length > 0
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SearchBar
         onSearchChange={setSearchTerm}
         onTagsChange={setSelectedTags}
@@ -74,72 +53,40 @@ export function PostsSearch({ posts }: PostsSearchProps) {
         selectedTags={selectedTags}
       />
 
-      {/* Results Summary */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground">
-          {hasActiveFilters ? (
-            <>
-              {filteredPosts.length}개의 포스트를 찾았습니다
-              {searchTerm && (
-                <span className="text-foreground font-medium ml-1">
-                  (&quot;{searchTerm}&quot; 검색 결과)
-                </span>
-              )}
-            </>
-          ) : (
-            <>총 {posts.length}개의 포스트가 있습니다</>
-          )}
-        </p>
-        <LayoutToggle layout={layout} onLayoutChange={handleLayoutChange} />
-      </div>
+      <p className="text-sm text-muted-foreground">
+        {hasActiveFilters ? (
+          <>
+            {filteredPosts.length}개의 포스트를 찾았습니다
+            {searchTerm && (
+              <span className="text-foreground font-medium ml-1">
+                (&quot;{searchTerm}&quot; 검색 결과)
+              </span>
+            )}
+          </>
+        ) : (
+          <>총 {posts.length}개의 포스트</>
+        )}
+      </p>
 
-      {/* Posts with Animation */}
       <AnimatePresence mode="popLayout">
         {filteredPosts.length > 0 ? (
-          layout === "horizontal" ? (
-            <motion.div
-              layout
-              className="space-y-6"
-            >
-              {filteredPosts.map((post) => (
-                <motion.div
-                  key={post.slug}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <HorizontalPostCard 
-                    post={post}
-                    className="py-6"
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              layout
-              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            >
-              {filteredPosts.map((post) => (
-                <motion.div
-                  key={post.slug}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <PostCard 
-                    post={post} 
-                    highlightTitle={searchTerm}
-                    highlightTags={selectedTags}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          )
+          <motion.div layout className="divide-y">
+            {filteredPosts.map((post) => (
+              <motion.div
+                key={post.slug}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <HorizontalPostCard
+                  post={post}
+                  className="py-5"
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}

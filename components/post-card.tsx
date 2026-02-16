@@ -36,13 +36,10 @@ export function PostCard({ post, highlightTitle, highlightTags = [] }: PostCardP
           <p className="text-muted-foreground line-clamp-3">{post.description}</p>
         </CardContent>
         <CardFooter className="flex flex-wrap gap-2">
-          {post.category && (
-            <Badge variant="secondary">{post.category}</Badge>
-          )}
           {post.tags?.map((tag) => (
-            <Badge 
-              key={tag} 
-              variant={highlightTags.includes(tag) ? "default" : "outline"} 
+            <Badge
+              key={tag}
+              variant={highlightTags.includes(tag) ? "default" : "outline"}
               className={cn(
                 "text-xs",
                 highlightTags.includes(tag) && "ring-2 ring-primary ring-offset-1"

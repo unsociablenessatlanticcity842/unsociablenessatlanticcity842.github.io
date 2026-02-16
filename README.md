@@ -14,7 +14,7 @@ Next.js와 shadcn/ui를 사용하여 구축한 개발 블로그입니다.
 
 ## 🛠️ 기술 스택
 
-- **Framework**: Next.js 14
+- **Framework**: Next.js 16.1.6
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **UI Components**: shadcn/ui

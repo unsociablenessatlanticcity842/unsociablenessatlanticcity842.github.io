@@ -4,12 +4,11 @@ import { getAllPosts, getPostBySlug } from "@/lib/mdx"
 import { MDXContent } from "@/components/mdx-content"
 import { BlogLayout } from "@/components/blog-layout"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, Tag, ArrowLeft, Eye, Code } from "lucide-react"
+import { Calendar, Clock, ArrowLeft } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { tagToSlug } from "@/lib/slug"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BlogPostingStructuredData } from "@/components/structured-data"
 import { GiscusCommentsWrapper } from "@/components/giscus-comments-wrapper"
 import { AdUnit } from "@/components/analytics/adsense"
@@ -75,94 +74,70 @@ export default async function PostPage({ params }: PostPageProps) {
         category={post.category}
         tags={post.tags}
       />
-      <article className="py-10">
+      <article className="py-10 md:py-14">
         <Link href="/posts">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            모든 포스트로
+          <Button variant="ghost" size="sm" className="mb-8 -ml-2 text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            모든 포스트
           </Button>
         </Link>
 
-        <header className="space-y-4 pb-8">
-          <h1 className="text-4xl font-bold">{post.title}</h1>
+        {/* Header */}
+        <header className="mb-10">
+          <h1 className="text-3xl md:text-[40px] font-bold leading-tight tracking-tight">
+            {post.title}
+          </h1>
 
           {post.description && (
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
               {post.description}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+          <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            {post.author && (
+              <span className="font-medium text-foreground">{post.author}</span>
+            )}
             <span className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="h-3.5 w-3.5" />
               {formatDate(post.date)}
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-3.5 w-3.5" />
               {post.readingTime}
             </span>
           </div>
+        </header>
 
-          <div className="flex flex-wrap gap-2">
-            {post.category && (
-              <Link href={`/categories/${post.category.toLowerCase().replace(/\s+/g, '-')}`}>
-                <Badge variant="secondary">{post.category}</Badge>
-              </Link>
-            )}
-            {post.tags?.map((tag) => (
+        {/* Body */}
+        <div className="prose dark:prose-invert max-w-none">
+          <MDXContent source={post.content} />
+        </div>
+
+        {/* Tags - bottom */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="mt-12 pt-8 border-t flex flex-wrap gap-2">
+            {post.tags.map((tag) => (
               <Link key={tag} href={`/tags/${tagToSlug(tag)}`}>
-                <Badge variant="outline" className="text-xs">
-                  <Tag className="mr-1 h-2 w-2" />
+                <Badge variant="outline" className="rounded-full text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors">
                   {tag}
                 </Badge>
               </Link>
             ))}
           </div>
-        </header>
+        )}
 
-        {/* 상단 광고 */}
-        <AdUnit
-          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_TOP || ''}
-          format="horizontal"
-          className="my-6"
-        />
+        {/* Mobile-only bottom ad */}
+        <div className="xl:hidden">
+          <AdUnit
+            slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
+            format="auto"
+            className="my-8"
+          />
+        </div>
 
-        <Tabs defaultValue="preview" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-            <TabsTrigger value="preview" className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Preview
-            </TabsTrigger>
-            <TabsTrigger value="markdown" className="flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              Markdown
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="preview" className="mt-6">
-            <div className="prose dark:prose-invert max-w-5xl mx-auto">
-              <MDXContent source={post.content} />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="markdown" className="mt-6">
-            <div className="rounded-lg border bg-muted/50 p-4 overflow-x-auto">
-              <pre className="text-sm">
-                <code>{post.rawContent}</code>
-              </pre>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* 하단 광고 */}
-        <AdUnit
-          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
-          format="auto"
-          className="my-8"
-        />
-
-        {/* 댓글 섹션 */}
-        <GiscusCommentsWrapper className="border-t pt-8" />
+        {/* Comments */}
+        <GiscusCommentsWrapper className="border-t pt-8 mt-12" />
       </article>
     </BlogLayout>
   )

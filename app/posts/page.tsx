@@ -11,11 +11,8 @@ export default function PostsPage() {
   const posts = getAllPosts()
 
   return (
-    <div className="container py-10">
-      <div className="space-y-4 pb-8">
-        <h1 className="text-4xl font-bold">모든 포스트</h1>
-      </div>
-
+    <div className="mx-auto max-w-[720px] px-4 md:px-6 py-10 md:py-14">
+      <h1 className="text-3xl font-bold mb-8">Posts</h1>
       <PostsSearchWrapper posts={posts} />
     </div>
   )

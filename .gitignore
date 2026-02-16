@@ -54,3 +54,9 @@ lib/mdx.ts.backup
 
 # Personal interview prep docs
 docs/FRONTEND_INTERVIEW_QUESTIONS.md
+
+.playwright-mcp/
+
+# oh-my-claudecode
+.omc/
+
