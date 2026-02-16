@@ -10,15 +10,15 @@ interface CategoryPageProps {
 }
 
 export async function generateStaticParams() {
-  const categories = getAllCategories()
+  const categories = await getAllCategories()
   return categories.map((category) => ({
     category: category.toLowerCase().replace(/\s+/g, '-'),
   }))
 }
 
 // Create a map for category slug to actual category name
-function getCategoryFromSlug(slug: string): string {
-  const categories = getAllCategories()
+async function getCategoryFromSlug(slug: string): Promise<string> {
+  const categories = await getAllCategories()
   const normalizedSlug = slug.toLowerCase()
 
   // Find the category that matches when lowercased and spaces replaced with hyphens
@@ -31,7 +31,7 @@ function getCategoryFromSlug(slug: string): string {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params
-  const categoryName = getCategoryFromSlug(category)
+  const categoryName = await getCategoryFromSlug(category)
 
   return {
     title: `${categoryName} 카테고리`,
@@ -44,8 +44,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params
-  const categoryName = getCategoryFromSlug(category)
-  const posts = getPostsByCategory(categoryName)
+  const categoryName = await getCategoryFromSlug(category)
+  const posts = await getPostsByCategory(categoryName)
 
   if (posts.length === 0) {
     notFound()

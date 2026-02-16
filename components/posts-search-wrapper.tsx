@@ -34,7 +34,6 @@ function PostsSearchSkeleton() {
 const PostsSearch = dynamic(
   () => import('./posts-search').then(mod => mod.PostsSearch),
   {
-    ssr: false,
     loading: () => <PostsSearchSkeleton />
   }
 )

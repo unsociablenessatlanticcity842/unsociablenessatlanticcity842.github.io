@@ -10,10 +10,10 @@ export const metadata: Metadata = {
   description: "모든 태그 목록",
 }
 
-export default function TagsPage() {
-  const allPosts = getAllPosts()
-  const tags = getAllTags()
-  
+export default async function TagsPage() {
+  const allPosts = await getAllPosts()
+  const tags = await getAllTags()
+
   // Count posts for each tag
   const tagCounts = tags.map(tag => {
     const count = allPosts.filter(post => post.tags?.includes(tag)).length

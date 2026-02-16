@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
-  const posts = getAllPosts()
+export default async function HomePage() {
+  const posts = await getAllPosts()
 
   return <HomePageClient posts={posts} />
 }

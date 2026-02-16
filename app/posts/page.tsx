@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: "모든 블로그 포스트 목록",
 }
 
-export default function PostsPage() {
-  const posts = getAllPosts()
+export default async function PostsPage() {
+  const posts = await getAllPosts()
 
   return (
     <div className="mx-auto max-w-[720px] px-4 md:px-6 py-10 md:py-14">

@@ -11,7 +11,7 @@ interface TagPageProps {
 }
 
 export async function generateStaticParams() {
-  const tags = getAllTags()
+  const tags = await getAllTags()
   return tags.map((tag) => ({
     tag: tagToSlug(tag),
   }))
@@ -19,7 +19,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
   const { tag } = await params
-  const allTags = getAllTags()
+  const allTags = await getAllTags()
   const actualTag = slugToTag(tag, allTags)
 
   if (!actualTag) {
@@ -37,14 +37,14 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
 
 export default async function TagPage({ params }: TagPageProps) {
   const { tag } = await params
-  const allTags = getAllTags()
+  const allTags = await getAllTags()
   const actualTag = slugToTag(tag, allTags)
 
   if (!actualTag) {
     notFound()
   }
 
-  const posts = getPostsByTag(actualTag)
+  const posts = await getPostsByTag(actualTag)
 
   if (posts.length === 0) {
     notFound()

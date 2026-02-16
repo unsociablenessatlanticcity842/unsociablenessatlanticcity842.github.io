@@ -1,7 +1,7 @@
 import { getAllPosts } from "./mdx"
 
-export function getCategoriesWithCount() {
-  const posts = getAllPosts()
+export async function getCategoriesWithCount() {
+  const posts = await getAllPosts()
   const categoryCounts = new Map<string, number>()
 
   posts.forEach((post) => {
@@ -16,8 +16,8 @@ export function getCategoriesWithCount() {
     .sort((a, b) => b.count - a.count)
 }
 
-export function getTagsWithCount() {
-  const posts = getAllPosts()
+export async function getTagsWithCount() {
+  const posts = await getAllPosts()
   const tagCounts = new Map<string, number>()
 
   posts.forEach((post) => {
