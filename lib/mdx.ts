@@ -28,6 +28,8 @@ export type Post = {
   author?: string
   coverImage?: string
   headings?: Heading[]
+  series?: string
+  seriesOrder?: number
 }
 
 export type PostMatter = {
@@ -52,13 +54,19 @@ async function fileExists(filePath: string): Promise<boolean> {
 export async function getPostBySlug(slug: string) {
   const realSlug = slug.replace(/\.mdx$/, '')
 
-  async function findPostFile(searchSlug: string): Promise<{ path: string; category?: string } | null> {
+  async function findPostFile(
+    searchSlug: string,
+  ): Promise<{ path: string; category?: string } | null> {
     const directPath = path.join(postsDirectory, `${searchSlug}.mdx`)
     if (await fileExists(directPath)) {
       return { path: directPath }
     }
 
-    async function searchInDirectory(dir: string, categoryPath?: string, depth = 0): Promise<{ path: string; category?: string } | null> {
+    async function searchInDirectory(
+      dir: string,
+      categoryPath?: string,
+      depth = 0,
+    ): Promise<{ path: string; category?: string } | null> {
       if (depth > 2) return null
 
       try {
@@ -68,9 +76,7 @@ export async function getPostBySlug(slug: string) {
           const fullPath = path.join(dir, entry.name)
 
           if (entry.isDirectory()) {
-            const newCategoryPath = categoryPath
-              ? `${categoryPath}/${entry.name}`
-              : entry.name
+            const newCategoryPath = categoryPath ? `${categoryPath}/${entry.name}` : entry.name
 
             const result = await searchInDirectory(fullPath, newCategoryPath, depth + 1)
             if (result) return result
@@ -115,7 +121,7 @@ export async function getPostBySlug(slug: string) {
             {
               ignoreMissing: true,
               defaultLanguage: 'plaintext',
-            }
+            },
           ],
           [
             rehypeAutolinkHeadings,
@@ -144,7 +150,7 @@ export async function getPostBySlug(slug: string) {
     headings,
     category,
     ...(data as PostMatter),
-  } as Post & { content: ReactElement, rawContent: string }
+  } as Post & { content: ReactElement; rawContent: string }
 }
 
 export async function getAllPosts(): Promise<Post[]> {
@@ -187,9 +193,7 @@ export async function getAllPosts(): Promise<Post[]> {
       const fullPath = path.join(dir, entry.name)
 
       if (entry.isDirectory()) {
-        const newCategoryPath = categoryPath
-          ? `${categoryPath}/${entry.name}`
-          : entry.name
+        const newCategoryPath = categoryPath ? `${categoryPath}/${entry.name}` : entry.name
 
         await scanDirectory(fullPath, newCategoryPath, depth + 1)
       } else if (entry.name.endsWith('.mdx')) {
@@ -203,9 +207,7 @@ export async function getAllPosts(): Promise<Post[]> {
 
   await scanDirectory(postsDirectory)
 
-  return posts.sort((post1, post2) =>
-    new Date(post2.date) > new Date(post1.date) ? 1 : -1
-  )
+  return posts.sort((post1, post2) => (new Date(post2.date) > new Date(post1.date) ? 1 : -1))
 }
 
 export async function getPostsByTag(tag: string): Promise<Post[]> {
@@ -227,6 +229,44 @@ export async function getAllTags(): Promise<string[]> {
   })
 
   return Array.from(tags).sort()
+}
+
+export async function getRelatedPosts(currentSlug: string, limit = 4): Promise<Post[]> {
+  const allPosts = await getAllPosts()
+  const current = allPosts.find((p) => p.slug === currentSlug)
+  if (!current) return []
+
+  const currentTags = new Set(current.tags ?? [])
+
+  const others = allPosts.filter((p) => p.slug !== currentSlug)
+
+  const scored = others
+    .map((post) => {
+      let score = 0
+
+      if (current.series && post.series === current.series) {
+        score += 30
+      }
+
+      if (current.category && post.category === current.category) {
+        score += 20
+      }
+
+      const postTags = post.tags ?? []
+      for (const tag of postTags) {
+        if (currentTags.has(tag)) {
+          score += 5
+        }
+      }
+
+      return { post, score }
+    })
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score
+      return new Date(b.post.date).getTime() - new Date(a.post.date).getTime()
+    })
+
+  return scored.slice(0, limit).map(({ post }) => post)
 }
 
 export async function getAllCategories(): Promise<string[]> {
