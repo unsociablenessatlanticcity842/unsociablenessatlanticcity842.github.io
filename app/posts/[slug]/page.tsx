@@ -4,11 +4,12 @@ import { getAllPosts, getPostBySlug } from "@/lib/mdx"
 import { MDXContent } from "@/components/mdx-content"
 import { BlogLayout } from "@/components/blog-layout"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, ArrowLeft } from "lucide-react"
+import { Calendar, Clock } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { tagToSlug } from "@/lib/slug"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import Image from "next/image"
+
 import { BlogPostingStructuredData } from "@/components/structured-data"
 import { GiscusCommentsWrapper } from "@/components/giscus-comments-wrapper"
 import { AdUnit } from "@/components/analytics/adsense"
@@ -64,51 +65,67 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   return (
-    <BlogLayout headings={post.headings}>
-      <BlogPostingStructuredData
-        title={post.title}
-        description={post.description}
-        date={post.date}
-        author={post.author}
-        slug={post.slug}
-        category={post.category}
-        tags={post.tags}
-      />
-      <article className="py-10 md:py-14">
-        <Link href="/posts">
-          <Button variant="ghost" size="sm" className="mb-8 -ml-2 text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            모든 포스트
-          </Button>
-        </Link>
-
-        {/* Header */}
-        <header className="mb-10">
-          <h1 className="text-3xl md:text-[40px] font-bold leading-tight tracking-tight">
-            {post.title}
-          </h1>
-
-          {post.description && (
-            <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-              {post.description}
-            </p>
-          )}
-
-          <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            {post.author && (
-              <span className="font-medium text-foreground">{post.author}</span>
+    <BlogLayout
+      headings={post.headings}
+      header={
+        <>
+          <BlogPostingStructuredData
+            title={post.title}
+            description={post.description}
+            date={post.date}
+            author={post.author}
+            slug={post.slug}
+            category={post.category}
+            tags={post.tags}
+          />
+          {/* Hero Header with background image */}
+          <div className="relative overflow-hidden">
+            {/* Background */}
+            {post.coverImage ? (
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-secondary/20 dark:from-primary/40 dark:via-primary/20 dark:to-secondary/40" />
             )}
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              {formatDate(post.date)}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              {post.readingTime}
-            </span>
-          </div>
-        </header>
+            {/* Overlay for readability */}
+            <div className="absolute inset-0 bg-black/50" />
 
+            {/* Header content */}
+            <header className="relative z-10 mx-auto max-w-[800px] px-6 py-12 md:py-20 text-white">
+              <h1 className="text-3xl md:text-[40px] font-bold leading-tight tracking-tight">
+                {post.title}
+              </h1>
+
+              {post.description && (
+                <p className="mt-4 text-lg text-white/80 leading-relaxed">
+                  {post.description}
+                </p>
+              )}
+
+              <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-white/70">
+                {post.author && (
+                  <span className="font-medium text-white">{post.author}</span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {formatDate(post.date)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {post.readingTime}
+                </span>
+              </div>
+            </header>
+          </div>
+        </>
+      }
+    >
+      <article className="pb-14">
         {/* Body */}
         <div className="prose dark:prose-invert max-w-none">
           <MDXContent source={post.content} />
@@ -127,14 +144,12 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         )}
 
-        {/* Mobile-only bottom ad */}
-        <div className="xl:hidden">
-          <AdUnit
-            slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
-            format="auto"
-            className="my-8"
-          />
-        </div>
+        {/* Ad between content and comments */}
+        <AdUnit
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
+          format="auto"
+          className="my-8"
+        />
 
         {/* Comments */}
         <GiscusCommentsWrapper className="border-t pt-8 mt-12" />

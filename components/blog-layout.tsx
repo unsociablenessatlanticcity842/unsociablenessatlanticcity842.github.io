@@ -5,24 +5,30 @@ import { TableOfContents } from "@/components/table-of-contents"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { List } from "lucide-react"
-import { AdUnit } from "@/components/analytics/adsense"
+
 import type { Heading } from "@/lib/extract-headings"
 
 interface BlogLayoutProps {
+  header?: React.ReactNode
   children: React.ReactNode
   headings?: Heading[]
 }
 
 export function BlogLayout({
+  header,
   children,
   headings = [],
 }: BlogLayoutProps) {
   const [tocOpen, setTocOpen] = React.useState(false)
+  const hasToc = headings.length > 0
 
   return (
-    <div className="relative mx-auto max-w-[720px] px-4 md:px-6">
+    <>
+      {/* Header - full bleed */}
+      {header && header}
+
       {/* Mobile TOC Button */}
-      {headings.length > 0 && (
+      {hasToc && (
         <div className="fixed top-20 right-4 z-40 xl:hidden">
           <Sheet open={tocOpen} onOpenChange={setTocOpen}>
             <SheetTrigger asChild>
@@ -45,30 +51,27 @@ export function BlogLayout({
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="min-w-0">
-        {children}
-      </main>
+      {/* Content + TOC */}
+      <div className="flex justify-center px-4 md:px-6 pt-16">
+        {/* Spacer - mirrors TOC width to keep main centered */}
+        {hasToc && (
+          <div className="hidden xl:block w-[220px] shrink-0 mr-10" />
+        )}
 
-      {/* AdSense - Below Content */}
-      <div className="mt-10">
-        <AdUnit
-          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
-          format="horizontal"
-          className="w-full"
-        />
-      </div>
+        {/* Main Content - centered */}
+        <main className="min-w-0 w-full max-w-[800px]">
+          {children}
+        </main>
 
-      {/* Desktop TOC - Floating Right */}
-      {headings.length > 0 && (
-        <aside className="absolute top-0 left-full hidden xl:block ml-10">
-          <div className="sticky top-20">
-            <div className="w-[220px] max-h-[calc(100vh-12rem)] overflow-y-auto">
+        {/* Desktop TOC - sticky, scrolls with content */}
+        {hasToc && (
+          <aside className="hidden xl:block w-[220px] shrink-0 ml-10">
+            <div className="sticky top-20 max-h-[calc(100vh-12rem)] overflow-y-auto">
               <TableOfContents headings={headings} />
             </div>
-          </div>
-        </aside>
-      )}
-    </div>
+          </aside>
+        )}
+      </div>
+    </>
   )
 }
