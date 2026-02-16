@@ -70,7 +70,7 @@ export default async function PostPage({ params }: PostPageProps) {
       headings={post.headings}
       leftSidebar={
         <AdUnit
-          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
           format="vertical"
           className="w-full"
         />
@@ -153,7 +153,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* Ad - mobile/tablet only (desktop shows in left sidebar) */}
         <AdUnit
-          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_POST_BOTTOM || ''}
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
           format="auto"
           className="my-8 xl:hidden"
         />
