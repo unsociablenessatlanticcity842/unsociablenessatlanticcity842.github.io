@@ -20,7 +20,7 @@ import {
  */
 export function useAnalytics() {
   // Generic event tracking
-  const trackEvent = useCallback((eventName: string, parameters?: Record<string, any>) => {
+  const trackEvent = useCallback((eventName: string, parameters?: Record<string, unknown>) => {
     sendGAEvent('event', eventName, parameters || {})
   }, [])
 
