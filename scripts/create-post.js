@@ -9,14 +9,14 @@
  *   node scripts/create-post.js --template backend --category Backend
  */
 
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+const fs = require('fs')
+const path = require('path')
+const readline = require('readline')
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
-});
+  output: process.stdout,
+})
 
 // 템플릿 정의
 const templates = {
@@ -63,7 +63,7 @@ public class ExampleController {
 ## 참고 자료
 
 - [Spring 공식 문서](https://spring.io/docs)
-`
+`,
   },
   backend: {
     category: 'Backend',
@@ -99,7 +99,7 @@ public class ExampleController {
 ## 참고 자료
 
 - [참고 링크]
-`
+`,
   },
   algorithm: {
     category: 'Algorithm',
@@ -145,7 +145,7 @@ public class ExampleController {
 ## 배운 점
 
 [이 문제를 통해 배운 내용]
-`
+`,
   },
   default: {
     category: 'General',
@@ -181,17 +181,17 @@ public class ExampleController {
 ## 참고 자료
 
 - [공식 문서 링크]
-`
-  }
-};
+`,
+  },
+}
 
 // 현재 날짜 (YYYY-MM-DD 형식)
 function getCurrentDate() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 // kebab-case 변환
@@ -199,83 +199,83 @@ function toKebabCase(str) {
   return str
     .toLowerCase()
     .replace(/[^a-z0-9가-힣]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-+|-+$/g, '')
 }
 
 // 질문 함수
 function question(prompt) {
   return new Promise((resolve) => {
-    rl.question(prompt, resolve);
-  });
+    rl.question(prompt, resolve)
+  })
 }
 
 // MDX 파일 생성
 async function createPost() {
-  console.log('\n📝 블로그 포스트 생성 스크립트\n');
+  console.log('\n📝 블로그 포스트 생성 스크립트\n')
 
   // 명령줄 인자 확인
-  const args = process.argv.slice(2);
-  let templateName = 'default';
-  let customCategory = null;
+  const args = process.argv.slice(2)
+  let templateName = 'default'
+  let customCategory = null
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--template' && args[i + 1]) {
-      templateName = args[i + 1];
-      i++;
+      templateName = args[i + 1]
+      i++
     }
     if (args[i] === '--category' && args[i + 1]) {
-      customCategory = args[i + 1];
-      i++;
+      customCategory = args[i + 1]
+      i++
     }
   }
 
   // 템플릿 확인
   if (!templates[templateName]) {
-    console.log(`❌ 템플릿을 찾을 수 없습니다: ${templateName}`);
-    console.log(`사용 가능한 템플릿: ${Object.keys(templates).join(', ')}\n`);
-    rl.close();
-    return;
+    console.log(`❌ 템플릿을 찾을 수 없습니다: ${templateName}`)
+    console.log(`사용 가능한 템플릿: ${Object.keys(templates).join(', ')}\n`)
+    rl.close()
+    return
   }
 
-  const template = templates[templateName];
+  const template = templates[templateName]
 
   // 사용자 입력 받기
-  const title = await question('📌 포스트 제목: ');
+  const title = await question('📌 포스트 제목: ')
   if (!title.trim()) {
-    console.log('❌ 제목은 필수입니다.');
-    rl.close();
-    return;
+    console.log('❌ 제목은 필수입니다.')
+    rl.close()
+    return
   }
 
-  const description = await question('📝 포스트 설명 (excerpt): ');
-  const category = customCategory || template.category;
-  const tagsInput = await question(`🏷️  태그 (쉼표로 구분, 기본값: ${template.tags.join(', ')}): `);
-  const tags = tagsInput.trim()
-    ? tagsInput.split(',').map(tag => tag.trim())
-    : template.tags;
+  const description = await question('📝 포스트 설명 (excerpt): ')
+  const category = customCategory || template.category
+  const tagsInput = await question(`🏷️  태그 (쉼표로 구분, 기본값: ${template.tags.join(', ')}): `)
+  const tags = tagsInput.trim() ? tagsInput.split(',').map((tag) => tag.trim()) : template.tags
 
   // 저장 위치 입력 받기
-  const folderInput = await question('📁 저장 폴더 (content/posts/ 기준, 예: backend/spring, 또는 Enter로 루트): ');
+  const folderInput = await question(
+    '📁 저장 폴더 (content/posts/ 기준, 예: backend/spring, 또는 Enter로 루트): ',
+  )
 
   // 파일명 생성
-  const fileName = toKebabCase(title);
+  const fileName = toKebabCase(title)
 
   // 파일 경로 생성
-  let filePath;
+  let filePath
   if (folderInput.trim()) {
     // 폴더 경로가 입력된 경우
-    const folderPath = folderInput.trim().replace(/^\/+|\/+$/g, ''); // 앞뒤 슬래시 제거
-    filePath = path.join(process.cwd(), 'content', 'posts', folderPath, `${fileName}.mdx`);
+    const folderPath = folderInput.trim().replace(/^\/+|\/+$/g, '') // 앞뒤 슬래시 제거
+    filePath = path.join(process.cwd(), 'content', 'posts', folderPath, `${fileName}.mdx`)
   } else {
     // 입력 없으면 content/posts/ 루트에 생성
-    filePath = path.join(process.cwd(), 'content', 'posts', `${fileName}.mdx`);
+    filePath = path.join(process.cwd(), 'content', 'posts', `${fileName}.mdx`)
   }
 
   // 폴더가 없으면 생성
-  const dir = path.dirname(filePath);
+  const dir = path.dirname(filePath)
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-    console.log(`✅ 폴더 생성: ${dir}`);
+    fs.mkdirSync(dir, { recursive: true })
+    console.log(`✅ 폴더 생성: ${dir}`)
   }
 
   // Frontmatter 생성
@@ -284,42 +284,42 @@ title: "${title}"
 date: "${getCurrentDate()}"
 description: "${description || title}"
 category: "${category}"
-tags: [${tags.map(tag => `"${tag}"`).join(', ')}]
+tags: [${tags.map((tag) => `"${tag}"`).join(', ')}]
 author: "Kaameo"
 ---
-`;
+`
 
   // 전체 내용 생성
-  const fullContent = frontmatter + '\n' + template.content;
+  const fullContent = frontmatter + '\n' + template.content
 
   // 파일 쓰기
   try {
     if (fs.existsSync(filePath)) {
-      const overwrite = await question('⚠️  파일이 이미 존재합니다. 덮어쓰시겠습니까? (y/N): ');
+      const overwrite = await question('⚠️  파일이 이미 존재합니다. 덮어쓰시겠습니까? (y/N): ')
       if (overwrite.toLowerCase() !== 'y') {
-        console.log('❌ 취소되었습니다.');
-        rl.close();
-        return;
+        console.log('❌ 취소되었습니다.')
+        rl.close()
+        return
       }
     }
 
-    fs.writeFileSync(filePath, fullContent, 'utf8');
-    console.log('\n✅ 포스트가 생성되었습니다!');
-    console.log(`📁 파일 경로: ${filePath}`);
-    console.log(`🔗 URL 경로: /posts/${fileName}`);
-    console.log('\n💡 다음 단계:');
-    console.log('   1. 생성된 MDX 파일을 열어 내용을 작성하세요');
-    console.log('   2. npm run dev 로 개발 서버를 실행하여 확인하세요');
-    console.log('   3. 작성이 완료되면 git commit 후 배포하세요\n');
+    fs.writeFileSync(filePath, fullContent, 'utf8')
+    console.log('\n✅ 포스트가 생성되었습니다!')
+    console.log(`📁 파일 경로: ${filePath}`)
+    console.log(`🔗 URL 경로: /posts/${fileName}`)
+    console.log('\n💡 다음 단계:')
+    console.log('   1. 생성된 MDX 파일을 열어 내용을 작성하세요')
+    console.log('   2. npm run dev 로 개발 서버를 실행하여 확인하세요')
+    console.log('   3. 작성이 완료되면 git commit 후 배포하세요\n')
   } catch (error) {
-    console.error('❌ 파일 생성 중 오류 발생:', error.message);
+    console.error('❌ 파일 생성 중 오류 발생:', error.message)
   }
 
-  rl.close();
+  rl.close()
 }
 
 // 스크립트 실행
-createPost().catch(error => {
-  console.error('오류 발생:', error);
-  rl.close();
-});
+createPost().catch((error) => {
+  console.error('오류 발생:', error)
+  rl.close()
+})

@@ -49,14 +49,12 @@ export function useAnalytics() {
     trackExternalLink(url)
   }, [])
 
-  const trackWebVitalsEvent = useCallback((metric: {
-    name: string
-    value: number
-    id: string
-    rating?: string
-  }) => {
-    trackWebVitals(metric)
-  }, [])
+  const trackWebVitalsEvent = useCallback(
+    (metric: { name: string; value: number; id: string; rating?: string }) => {
+      trackWebVitals(metric)
+    },
+    [],
+  )
 
   return {
     // Generic tracking

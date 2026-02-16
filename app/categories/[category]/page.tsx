@@ -1,7 +1,7 @@
-import { Metadata } from "next"
-import { notFound } from "next/navigation"
-import { getPostsByCategory, getAllCategories } from "@/lib/mdx"
-import { PostCard } from "@/components/post-card"
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { getPostsByCategory, getAllCategories } from '@/lib/mdx'
+import { PostCard } from '@/components/post-card'
 
 interface CategoryPageProps {
   params: Promise<{
@@ -23,7 +23,7 @@ async function getCategoryFromSlug(slug: string): Promise<string> {
 
   // Find the category that matches when lowercased and spaces replaced with hyphens
   const matchedCategory = categories.find(
-    cat => cat.toLowerCase().replace(/\s+/g, '-') === normalizedSlug
+    (cat) => cat.toLowerCase().replace(/\s+/g, '-') === normalizedSlug,
   )
 
   return matchedCategory || slug
@@ -55,9 +55,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     <div className="container py-10">
       <div className="space-y-4 pb-8">
         <h1 className="text-4xl font-bold">{categoryName} 카테고리</h1>
-        <p className="text-muted-foreground">
-          총 {posts.length}개의 포스트가 있습니다.
-        </p>
+        <p className="text-muted-foreground">총 {posts.length}개의 포스트가 있습니다.</p>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">

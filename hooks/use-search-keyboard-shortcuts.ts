@@ -9,7 +9,7 @@ interface UseSearchKeyboardShortcutsProps {
 export function useSearchKeyboardShortcuts({
   onSearchFocus,
   onClearFilters,
-  searchInputRef
+  searchInputRef,
 }: UseSearchKeyboardShortcutsProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,7 +22,7 @@ export function useSearchKeyboardShortcuts({
         }
         onSearchFocus?.()
       }
-      
+
       // Escape to clear filters when search is focused
       if (e.key === 'Escape' && document.activeElement === searchInputRef?.current) {
         e.preventDefault()

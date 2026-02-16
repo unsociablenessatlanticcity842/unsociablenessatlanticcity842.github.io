@@ -1,10 +1,10 @@
-import { Metadata } from "next"
-import { getAllPosts } from "@/lib/mdx"
-import { PostsSearchWrapper } from "@/components/posts-search-wrapper"
+import { Metadata } from 'next'
+import { getAllPosts } from '@/lib/mdx'
+import { PostsSearchWrapper } from '@/components/posts-search-wrapper'
 
 export const metadata: Metadata = {
-  title: "All Posts",
-  description: "모든 블로그 포스트 목록",
+  title: 'All Posts',
+  description: '모든 블로그 포스트 목록',
 }
 
 export default async function PostsPage() {

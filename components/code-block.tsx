@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { useState, useRef, useEffect } from "react"
-import { Check, Copy, ChevronDown, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { useState, useRef, useEffect } from 'react'
+import { Check, Copy, ChevronDown, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface CodeBlockProps {
   children: React.ReactNode
@@ -15,10 +15,10 @@ interface CodeBlockProps {
 
 export function CodeBlock({
   children,
-  className = "",
+  className = '',
   showLineNumbers = true,
   collapsible = false,
-  title
+  title,
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -27,12 +27,12 @@ export function CodeBlock({
 
   // Extract language from className
   const languageMatch = className.match(/language-(\w+)/)
-  const language = languageMatch ? languageMatch[1] : "plaintext"
+  const language = languageMatch ? languageMatch[1] : 'plaintext'
 
   // Calculate line count from rendered DOM for accuracy
   useEffect(() => {
     if (codeRef.current) {
-      const codeText = codeRef.current.textContent || ""
+      const codeText = codeRef.current.textContent || ''
       const lines = codeText.split('\n')
       // Remove the last empty line if it exists (from trailing newline)
       const count = lines[lines.length - 1] === '' ? lines.length - 1 : lines.length
@@ -42,7 +42,7 @@ export function CodeBlock({
 
   const handleCopy = async () => {
     if (codeRef.current) {
-      const code = codeRef.current.textContent || ""
+      const code = codeRef.current.textContent || ''
       await navigator.clipboard.writeText(code)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -68,20 +68,13 @@ export function CodeBlock({
               )}
             </Button>
           )}
-          
+
           {/* Language Badge */}
           <div className="flex items-center gap-2">
-            
-            <span className="text-xs font-medium text-muted-foreground">
-              {language}
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">{language}</span>
           </div>
 
-          {title && (
-            <span className="ml-2 text-sm font-medium text-foreground/80">
-              {title}
-            </span>
-          )}
+          {title && <span className="ml-2 text-sm font-medium text-foreground/80">{title}</span>}
         </div>
 
         {/* Copy Button */}
@@ -113,8 +106,8 @@ export function CodeBlock({
             {showLineNumbers && lineCount > 0 && (
               <div className="select-none border-r border-border/50 bg-muted/10 px-2 py-2 text-right">
                 {Array.from({ length: lineCount }, (_, i) => (
-                  <div 
-                    key={i + 1} 
+                  <div
+                    key={i + 1}
                     className="text-xs leading-6 text-muted-foreground/70 font-mono"
                     style={{ userSelect: 'none' }}
                   >
@@ -125,13 +118,7 @@ export function CodeBlock({
             )}
 
             {/* Code */}
-            <pre
-              ref={codeRef}
-              className={cn(
-                "flex-1 overflow-x-auto bg-transparent",
-                className
-              )}
-            >
+            <pre ref={codeRef} className={cn('flex-1 overflow-x-auto bg-transparent', className)}>
               <code className="block px-4 py-2 text-sm leading-6 font-mono">{children}</code>
             </pre>
           </div>

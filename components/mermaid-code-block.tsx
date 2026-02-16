@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { Check, Copy, Eye, Code } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { useEffect, useState } from 'react'
+import { Check, Copy, Eye, Code } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface MermaidCodeBlockProps {
   children: string
@@ -13,14 +13,12 @@ interface MermaidCodeBlockProps {
 let mermaidAPI: typeof import('mermaid').default | null = null
 let mermaidInitialized = false
 
-export function MermaidCodeBlock({ 
-  children
-}: MermaidCodeBlockProps) {
+export function MermaidCodeBlock({ children }: MermaidCodeBlockProps) {
   const [copied, setCopied] = useState(false)
-  const [viewMode, setViewMode] = useState<"preview" | "code">("preview")
+  const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [svgCode, setSvgCode] = useState<string>("")
+  const [svgCode, setSvgCode] = useState<string>('')
 
   useEffect(() => {
     if (!children || typeof children !== 'string') {
@@ -35,7 +33,7 @@ export function MermaidCodeBlock({
       try {
         // Import mermaid dynamically
         if (!mermaidAPI) {
-          const mermaidModule = await import("mermaid")
+          const mermaidModule = await import('mermaid')
           mermaidAPI = mermaidModule.default
         }
 
@@ -45,22 +43,22 @@ export function MermaidCodeBlock({
         if (!mermaidInitialized) {
           mermaidAPI.initialize({
             startOnLoad: false,
-            theme: document.documentElement.classList.contains("dark") ? "dark" : "default",
+            theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
             securityLevel: 'loose',
             themeVariables: {
-              darkMode: document.documentElement.classList.contains("dark")
-            }
+              darkMode: document.documentElement.classList.contains('dark'),
+            },
           })
           mermaidInitialized = true
         }
 
         // Generate unique ID
         const id = `mermaid-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
-        
+
         try {
           // Parse and render the diagram
           const { svg } = await mermaidAPI.render(id, children.trim())
-          
+
           if (!isCancelled) {
             setSvgCode(svg)
             setError(null)
@@ -73,13 +71,15 @@ export function MermaidCodeBlock({
             if (element) {
               element.remove()
             }
-            
-            setError(renderError instanceof Error ? renderError.message : "Failed to render diagram")
+
+            setError(
+              renderError instanceof Error ? renderError.message : 'Failed to render diagram',
+            )
           }
         }
       } catch (err) {
         if (!isCancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load Mermaid")
+          setError(err instanceof Error ? err.message : 'Failed to load Mermaid')
         }
       } finally {
         if (!isCancelled) {
@@ -104,14 +104,14 @@ export function MermaidCodeBlock({
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
-          mutation.type === "attributes" &&
-          mutation.attributeName === "class" &&
+          mutation.type === 'attributes' &&
+          mutation.attributeName === 'class' &&
           mutation.target === document.documentElement
         ) {
           // Reset initialization flag to reinitialize with new theme
           mermaidInitialized = false
           // Force re-render by updating state
-          setSvgCode("")
+          setSvgCode('')
           setIsLoading(true)
         }
       })
@@ -119,7 +119,7 @@ export function MermaidCodeBlock({
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ['class'],
     })
 
     return () => observer.disconnect()
@@ -137,32 +137,24 @@ export function MermaidCodeBlock({
       <div className="flex items-center justify-between border-b border-border/50 bg-muted/20 px-4 py-2">
         <div className="flex items-center gap-3">
           {/* Language Badge */}
-          <span className="text-xs font-medium text-muted-foreground">
-            mermaid
-          </span>
+          <span className="text-xs font-medium text-muted-foreground">mermaid</span>
 
           {/* View Mode Toggle */}
           <div className="flex items-center gap-1 rounded-md bg-muted/50 p-0.5">
             <Button
-              variant={viewMode === "preview" ? "secondary" : "ghost"}
+              variant={viewMode === 'preview' ? 'secondary' : 'ghost'}
               size="sm"
-              className={cn(
-                "h-6 px-2 text-xs",
-                viewMode === "preview" && "shadow-sm"
-              )}
-              onClick={() => setViewMode("preview")}
+              className={cn('h-6 px-2 text-xs', viewMode === 'preview' && 'shadow-sm')}
+              onClick={() => setViewMode('preview')}
             >
               <Eye className="mr-1 h-3 w-3" />
               미리보기
             </Button>
             <Button
-              variant={viewMode === "code" ? "secondary" : "ghost"}
+              variant={viewMode === 'code' ? 'secondary' : 'ghost'}
               size="sm"
-              className={cn(
-                "h-6 px-2 text-xs",
-                viewMode === "code" && "shadow-sm"
-              )}
-              onClick={() => setViewMode("code")}
+              className={cn('h-6 px-2 text-xs', viewMode === 'code' && 'shadow-sm')}
+              onClick={() => setViewMode('code')}
             >
               <Code className="mr-1 h-3 w-3" />
               코드
@@ -193,7 +185,7 @@ export function MermaidCodeBlock({
 
       {/* Content */}
       <div className="relative">
-        {viewMode === "preview" ? (
+        {viewMode === 'preview' ? (
           <div className="p-6">
             {error ? (
               <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950/20 dark:text-red-400">
@@ -205,7 +197,7 @@ export function MermaidCodeBlock({
                 <span className="text-muted-foreground">다이어그램 로딩 중...</span>
               </div>
             ) : (
-              <div 
+              <div
                 className="mermaid-container flex justify-center overflow-x-auto"
                 dangerouslySetInnerHTML={{ __html: svgCode }}
               />

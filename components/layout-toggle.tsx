@@ -1,20 +1,20 @@
-"use client"
+'use client'
 
-import { LayoutGrid, LayoutList } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { LayoutGrid, LayoutList } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface LayoutToggleProps {
-  layout: "grid" | "horizontal"
-  onLayoutChange: (layout: "grid" | "horizontal") => void
+  layout: 'grid' | 'horizontal'
+  onLayoutChange: (layout: 'grid' | 'horizontal') => void
 }
 
 export function LayoutToggle({ layout, onLayoutChange }: LayoutToggleProps) {
   return (
     <div className="flex items-center gap-1">
       <Button
-        variant={layout === "horizontal" ? "default" : "ghost"}
+        variant={layout === 'horizontal' ? 'default' : 'ghost'}
         size="icon"
-        onClick={() => onLayoutChange("horizontal")}
+        onClick={() => onLayoutChange('horizontal')}
         className="h-8 w-8"
         title="가로형 레이아웃"
       >
@@ -23,9 +23,9 @@ export function LayoutToggle({ layout, onLayoutChange }: LayoutToggleProps) {
       </Button>
 
       <Button
-        variant={layout === "grid" ? "default" : "ghost"}
+        variant={layout === 'grid' ? 'default' : 'ghost'}
         size="icon"
-        onClick={() => onLayoutChange("grid")}
+        onClick={() => onLayoutChange('grid')}
         className="h-8 w-8"
         title="그리드 레이아웃"
       >

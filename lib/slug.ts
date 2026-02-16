@@ -10,9 +10,9 @@ export function tagToSlug(tag: string): string {
 
 export function slugToTag(slug: string, tags: string[]): string | undefined {
   // Try exact match first
-  const exactMatch = tags.find(tag => tagToSlug(tag) === slug)
+  const exactMatch = tags.find((tag) => tagToSlug(tag) === slug)
   if (exactMatch) return exactMatch
-  
+
   // Try case-insensitive match
-  return tags.find(tag => tagToSlug(tag).toLowerCase() === slug.toLowerCase())
+  return tags.find((tag) => tagToSlug(tag).toLowerCase() === slug.toLowerCase())
 }

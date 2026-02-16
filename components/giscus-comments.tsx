@@ -32,17 +32,17 @@ export function GiscusComments({ className = '' }: GiscusCommentsProps) {
   }
 
   return (
-    <section 
-      className={`mt-16 ${className}`}
-      aria-label="댓글 섹션"
-    >
+    <section className={`mt-16 ${className}`} aria-label="댓글 섹션">
       <h2 className="text-2xl font-bold mb-8">댓글</h2>
       <div className="rounded-lg border bg-card p-6">
         <Giscus
-          repo={(process.env.NEXT_PUBLIC_GISCUS_REPO || "kaameo/kaameo.github.io") as `${string}/${string}`}
-          repoId={process.env.NEXT_PUBLIC_GISCUS_REPO_ID || ""}
-          category={process.env.NEXT_PUBLIC_GISCUS_CATEGORY || "Announcements"}
-          categoryId={process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || ""}
+          repo={
+            (process.env.NEXT_PUBLIC_GISCUS_REPO ||
+              'kaameo/kaameo.github.io') as `${string}/${string}`
+          }
+          repoId={process.env.NEXT_PUBLIC_GISCUS_REPO_ID || ''}
+          category={process.env.NEXT_PUBLIC_GISCUS_CATEGORY || 'Announcements'}
+          categoryId={process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || ''}
           mapping="pathname"
           strict="0"
           reactionsEnabled="1"

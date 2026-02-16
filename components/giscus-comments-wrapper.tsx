@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
 // Dynamic import for better performance
 const GiscusComments = dynamic(
-  () => import("@/components/giscus-comments").then((mod) => mod.GiscusComments),
+  () => import('@/components/giscus-comments').then((mod) => mod.GiscusComments),
   {
     ssr: false,
     loading: () => (
@@ -16,7 +16,7 @@ const GiscusComments = dynamic(
         </div>
       </div>
     ),
-  }
+  },
 )
 
 interface GiscusCommentsWrapperProps {
@@ -25,14 +25,16 @@ interface GiscusCommentsWrapperProps {
 
 export function GiscusCommentsWrapper({ className }: GiscusCommentsWrapperProps) {
   return (
-    <Suspense fallback={
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-8">댓글</h2>
-        <div className="animate-pulse">
-          <div className="h-32 bg-muted rounded-lg"></div>
+    <Suspense
+      fallback={
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-8">댓글</h2>
+          <div className="animate-pulse">
+            <div className="h-32 bg-muted rounded-lg"></div>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <GiscusComments className={className} />
     </Suspense>
   )

@@ -1,22 +1,18 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useTheme } from "next-themes"
-import { Moon, Sun, Menu, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTheme } from 'next-themes'
+import { Moon, Sun, Menu, Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { useState } from 'react'
+import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/posts", label: "Posts" },
-  { href: "/about", label: "About" },
+  { href: '/', label: 'Home' },
+  { href: '/posts', label: 'Posts' },
+  { href: '/about', label: 'About' },
 ]
 
 export function Header() {
@@ -39,10 +35,10 @@ export function Header() {
               key={item.href}
               href={item.href}
               className={cn(
-                "px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200",
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200',
                 pathname === item.href
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {item.label}
@@ -62,7 +58,7 @@ export function Header() {
             variant="ghost"
             size="icon"
             aria-label="Toggle theme"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -71,12 +67,7 @@ export function Header() {
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                aria-label="Open menu"
-              >
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -87,10 +78,10 @@ export function Header() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "px-4 py-3 text-base font-medium rounded-md transition-colors",
+                      'px-4 py-3 text-base font-medium rounded-md transition-colors',
                       pathname === item.href
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        ? 'bg-accent text-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >

@@ -1,19 +1,19 @@
-"use client"
+'use client'
 
-import { useState, useMemo, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
-import { Post } from "@/lib/mdx"
-import { HorizontalPostCard } from "@/components/horizontal-post-card"
-import { SearchBar } from "@/components/search-bar"
-import { filterPosts } from "@/lib/search-utils"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Post } from '@/lib/mdx'
+import { HorizontalPostCard } from '@/components/horizontal-post-card'
+import { SearchBar } from '@/components/search-bar'
+import { filterPosts } from '@/lib/search-utils'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface PostsSearchProps {
   posts: Post[]
 }
 
 export function PostsSearch({ posts }: PostsSearchProps) {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const searchParams = useSearchParams()
 
@@ -32,8 +32,8 @@ export function PostsSearch({ posts }: PostsSearchProps) {
 
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>()
-    posts.forEach(post => {
-      post.tags?.forEach(tag => tagSet.add(tag))
+    posts.forEach((post) => {
+      post.tags?.forEach((tag) => tagSet.add(tag))
     })
     return Array.from(tagSet).sort()
   }, [posts])
@@ -80,10 +80,7 @@ export function PostsSearch({ posts }: PostsSearchProps) {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <HorizontalPostCard
-                  post={post}
-                  className="py-5"
-                />
+                <HorizontalPostCard post={post} className="py-5" />
               </motion.div>
             ))}
           </motion.div>
@@ -93,12 +90,8 @@ export function PostsSearch({ posts }: PostsSearchProps) {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <p className="text-muted-foreground text-lg">
-              검색 결과가 없습니다
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              다른 검색어나 태그를 시도해보세요
-            </p>
+            <p className="text-muted-foreground text-lg">검색 결과가 없습니다</p>
+            <p className="text-sm text-muted-foreground mt-2">다른 검색어나 태그를 시도해보세요</p>
           </motion.div>
         )}
       </AnimatePresence>

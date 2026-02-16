@@ -1,11 +1,18 @@
-import Link from "next/link"
-import { formatDate } from "@/lib/utils"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, Tag } from "lucide-react"
-import { highlightText } from "@/lib/search-utils"
-import { cn } from "@/lib/utils"
-import type { Post } from "@/lib/mdx"
+import Link from 'next/link'
+import { formatDate } from '@/lib/utils'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Calendar, Clock, Tag } from 'lucide-react'
+import { highlightText } from '@/lib/search-utils'
+import { cn } from '@/lib/utils'
+import type { Post } from '@/lib/mdx'
 
 interface PostCardProps {
   post: Post
@@ -39,10 +46,10 @@ export function PostCard({ post, highlightTitle, highlightTags = [] }: PostCardP
           {post.tags?.map((tag) => (
             <Badge
               key={tag}
-              variant={highlightTags.includes(tag) ? "default" : "outline"}
+              variant={highlightTags.includes(tag) ? 'default' : 'outline'}
               className={cn(
-                "text-xs",
-                highlightTags.includes(tag) && "ring-2 ring-primary ring-offset-1"
+                'text-xs',
+                highlightTags.includes(tag) && 'ring-2 ring-primary ring-offset-1',
               )}
             >
               <Tag className="mr-1 h-2 w-2" />

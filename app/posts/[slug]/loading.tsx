@@ -10,7 +10,11 @@ export default function PostLoading() {
         </div>
         <div className="border-t pt-8 space-y-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-4 bg-muted rounded" style={{ width: `${75 + Math.random() * 25}%` }} />
+            <div
+              key={i}
+              className="h-4 bg-muted rounded"
+              style={{ width: `${75 + Math.random() * 25}%` }}
+            />
           ))}
         </div>
       </div>

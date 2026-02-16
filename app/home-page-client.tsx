@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { HorizontalPostCard } from "@/components/horizontal-post-card"
-import { ArrowRight } from "lucide-react"
-import type { Post } from "@/lib/mdx"
+import Link from 'next/link'
+import { HorizontalPostCard } from '@/components/horizontal-post-card'
+import { ArrowRight } from 'lucide-react'
+import type { Post } from '@/lib/mdx'
 
 interface HomePageClientProps {
   posts: Post[]
@@ -17,9 +17,7 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
     <div className="mx-auto max-w-[720px] px-4 md:px-6">
       {/* Minimal Hero */}
       <section className="pt-10 md:pt-14 pb-8 border-b">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Kaameo Dev Blog
-        </h1>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Kaameo Dev Blog</h1>
         <p className="mt-3 text-lg text-muted-foreground">
           다양한 기술 스택에 대한 경험과 인사이트를 나눕니다.
         </p>
@@ -41,7 +39,13 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
               </p>
             )}
             <div className="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
-              <time>{new Date(featuredPost.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+              <time>
+                {new Date(featuredPost.date).toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
               <span>·</span>
               <span>{featuredPost.readingTime}</span>
               {featuredPost.tags && featuredPost.tags.length > 0 && (
@@ -70,11 +74,7 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
 
         <div className="divide-y">
           {recentPosts.map((post) => (
-            <HorizontalPostCard
-              key={post.slug}
-              post={post}
-              className="py-6"
-            />
+            <HorizontalPostCard key={post.slug} post={post} className="py-6" />
           ))}
         </div>
       </section>

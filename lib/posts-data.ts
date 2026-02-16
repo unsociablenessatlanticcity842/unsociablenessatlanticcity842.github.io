@@ -1,4 +1,4 @@
-import { getAllPosts } from "./mdx"
+import { getAllPosts } from './mdx'
 
 export async function getCategoriesWithCount() {
   const posts = await getAllPosts()

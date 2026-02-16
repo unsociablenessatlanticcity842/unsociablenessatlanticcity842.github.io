@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import type { Heading } from "@/lib/extract-headings"
+import * as React from 'react'
+import { cn } from '@/lib/utils'
+import type { Heading } from '@/lib/extract-headings'
 // ChevronRight import removed - no longer needed
 
 interface TableOfContentsProps {
@@ -10,7 +10,7 @@ interface TableOfContentsProps {
 }
 
 export function TableOfContents({ headings }: TableOfContentsProps) {
-  const [activeHeading, setActiveHeading] = React.useState<string>("")
+  const [activeHeading, setActiveHeading] = React.useState<string>('')
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(
@@ -23,9 +23,9 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         }
       },
       {
-        rootMargin: "-80px 0px -80% 0px", // Adjust for fixed header
+        rootMargin: '-80px 0px -80% 0px', // Adjust for fixed header
         threshold: 0,
-      }
+      },
     )
 
     // Observe all heading elements
@@ -53,21 +53,21 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       // More reliable scrolling with IntersectionObserver compensation
       const yOffset = -100 // Increased offset for better visibility
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
-      
+
       // Use requestAnimationFrame for smoother scrolling
       requestAnimationFrame(() => {
-        window.scrollTo({ top: y, behavior: "smooth" })
+        window.scrollTo({ top: y, behavior: 'smooth' })
       })
-      
+
       // Update URL without causing navigation
-      window.history.replaceState(null, "", `#${id}`)
-      
+      window.history.replaceState(null, '', `#${id}`)
+
       // Set active heading immediately for better UX
       setActiveHeading(id)
-      
+
       // Set focus for accessibility after scroll
       setTimeout(() => {
-        element.setAttribute("tabindex", "-1")
+        element.setAttribute('tabindex', '-1')
         element.focus({ preventScroll: true })
       }, 500)
     }
@@ -91,15 +91,15 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 href={`#${heading.id}`}
                 onClick={(e) => handleClick(e, heading.id)}
                 className={cn(
-                  "group block py-1.5 pr-2 text-muted-foreground transition-all duration-300 hover:text-foreground relative rounded-r-md",
-                  isActive && "text-primary font-semibold bg-primary/5 dark:bg-primary/10"
+                  'group block py-1.5 pr-2 text-muted-foreground transition-all duration-300 hover:text-foreground relative rounded-r-md',
+                  isActive && 'text-primary font-semibold bg-primary/5 dark:bg-primary/10',
                 )}
                 style={{
                   paddingLeft: `${paddingLeft + 12}px`,
-                  borderLeft: isActive ? "3px solid hsl(var(--primary))" : "3px solid transparent",
-                  transform: isActive ? "translateX(2px)" : "translateX(0)"
+                  borderLeft: isActive ? '3px solid hsl(var(--primary))' : '3px solid transparent',
+                  transform: isActive ? 'translateX(2px)' : 'translateX(0)',
                 }}
-                aria-current={isActive ? "location" : undefined}
+                aria-current={isActive ? 'location' : undefined}
               >
                 <span className="truncate">{heading.text}</span>
                 {isActive && (

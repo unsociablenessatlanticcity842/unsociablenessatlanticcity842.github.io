@@ -55,9 +55,13 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
     overflow-y: scroll;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 }
 
@@ -93,17 +97,17 @@
   }
 
   /* Card and interactive components */
-  [role="button"]:focus-visible,
-  [role="link"]:focus-visible,
-  [tabindex]:not([tabindex="-1"]):focus-visible {
+  [role='button']:focus-visible,
+  [role='link']:focus-visible,
+  [tabindex]:not([tabindex='-1']):focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
   }
 
   /* Navigation menu items */
-  [role="menuitem"]:focus-visible,
-  [role="menuitemradio"]:focus-visible,
-  [role="menuitemcheckbox"]:focus-visible {
+  [role='menuitem']:focus-visible,
+  [role='menuitemradio']:focus-visible,
+  [role='menuitemcheckbox']:focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: -2px;
     background-color: hsl(var(--accent));
@@ -174,8 +178,8 @@
 }
 
 /* Enhanced code block styling for new component */
-code[class*="language-"],
-pre[class*="language-"] {
+code[class*='language-'],
+pre[class*='language-'] {
   @apply text-foreground;
   text-align: left;
   white-space: pre;
@@ -190,11 +194,12 @@ pre[class*="language-"] {
   -moz-hyphens: none;
   -ms-hyphens: none;
   hyphens: none;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 /* Remove default pre styling since we use custom component */
-pre[class*="language-"] {
+pre[class*='language-'] {
   background: transparent;
   padding: 0;
   margin: 0;
@@ -383,7 +388,8 @@ pre[class*="language-"] {
 
 .mermaid-container svg {
   @apply max-w-full h-auto;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 /* Ensure Mermaid text is visible in both light and dark modes */
@@ -446,5 +452,6 @@ pre[class*="language-"] {
 /* Ensure proper text rendering */
 .mermaid-container text {
   font-size: 14px !important;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace !important;
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace !important;
 }

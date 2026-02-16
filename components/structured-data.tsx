@@ -15,36 +15,37 @@ export function BlogPostingStructuredData({
   author,
   slug,
   category,
-  tags
+  tags,
 }: BlogPostingSchema) {
   const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": title,
-    "description": description,
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description: description,
     ...(author && {
-      "author": {
-        "@type": "Person",
-        "name": author
-      }
+      author: {
+        '@type': 'Person',
+        name: author,
+      },
     }),
-    "datePublished": date,
-    "dateModified": date,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `https://kaameo.github.io/posts/${slug}/`
+    datePublished: date,
+    dateModified: date,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://kaameo.github.io/posts/${slug}/`,
     },
-    "publisher": {
-      "@type": "Person",
-      "name": "Kaameo",
-      "url": "https://kaameo.github.io"
+    publisher: {
+      '@type': 'Person',
+      name: 'Kaameo',
+      url: 'https://kaameo.github.io',
     },
     ...(category && {
-      "articleSection": category
+      articleSection: category,
     }),
-    ...(tags && tags.length > 0 && {
-      "keywords": tags.join(", ")
-    })
+    ...(tags &&
+      tags.length > 0 && {
+        keywords: tags.join(', '),
+      }),
   }
 
   return (

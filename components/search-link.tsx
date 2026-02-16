@@ -1,22 +1,22 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useSearchNavigation } from "@/hooks/use-search-navigation"
+import Link from 'next/link'
+import { Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useSearchNavigation } from '@/hooks/use-search-navigation'
 
 interface SearchLinkProps {
   showShortcut?: boolean
   enableKeyboardNavigation?: boolean
 }
 
-export function SearchLink({ 
+export function SearchLink({
   showShortcut = false,
-  enableKeyboardNavigation = false 
+  enableKeyboardNavigation = false,
 }: SearchLinkProps) {
   // Always call the hook, but it only adds event listeners when enabled
   useSearchNavigation(enableKeyboardNavigation)
-  
+
   return (
     <Link href="/posts">
       <Button size="lg" variant="outline" className="group relative">
