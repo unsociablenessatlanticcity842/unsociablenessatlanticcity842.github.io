@@ -1,22 +1,23 @@
+import { Skeleton } from '@/components/ui/skeleton'
+import { HorizontalPostCardSkeleton } from '@/components/horizontal-post-card-skeleton'
+
 export default function PostsLoading() {
   return (
-    <div className="container py-10 max-w-5xl">
-      <div className="space-y-8 animate-pulse">
-        <div className="h-12 bg-muted rounded-lg" />
-        <div className="flex items-center justify-between">
-          <div className="h-6 w-32 bg-muted rounded" />
-          <div className="h-10 w-24 bg-muted rounded" />
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-3 rounded-lg border p-6">
-              <div className="h-4 bg-muted rounded w-1/4" />
-              <div className="h-6 bg-muted rounded w-3/4" />
-              <div className="h-4 bg-muted rounded w-full" />
-              <div className="h-4 bg-muted rounded w-2/3" />
-            </div>
-          ))}
-        </div>
+    <div className="mx-auto max-w-[720px] px-4 md:px-6 py-10 md:py-14">
+      {/* "Posts" Title Skeleton */}
+      <Skeleton className="h-9 md:h-10 w-24 mb-8" />
+
+      {/* Search Bar Skeleton */}
+      <Skeleton className="h-12 w-full rounded-lg mb-6" />
+
+      {/* Result Summary Skeleton */}
+      <Skeleton className="h-5 w-32 mb-6" />
+
+      {/* Post List Skeleton */}
+      <div className="divide-y">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <HorizontalPostCardSkeleton key={i} className="py-6" />
+        ))}
       </div>
     </div>
   )
