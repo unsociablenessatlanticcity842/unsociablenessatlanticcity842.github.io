@@ -97,11 +97,10 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 style={{
                   paddingLeft: `${paddingLeft + 12}px`,
                   borderLeft: isActive ? '3px solid hsl(var(--primary))' : '3px solid transparent',
-                  transform: isActive ? 'translateX(2px)' : 'translateX(0)',
                 }}
                 aria-current={isActive ? 'location' : undefined}
               >
-                <span className="truncate">{heading.text}</span>
+                <span>{heading.text}</span>
                 {isActive && (
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-primary">
                     <svg width="4" height="4" viewBox="0 0 4 4" fill="currentColor">

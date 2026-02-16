@@ -1,3 +1,5 @@
+import GithubSlugger from 'github-slugger'
+
 /**
  * Represents a heading extracted from Markdown/MDX content
  */
@@ -57,25 +59,17 @@ export function extractHeadings(content: string): Heading[] {
   // Step 2: Extract headings from cleaned content
   const headings: Heading[] = []
   const headingRegex = /^(#{1,6})\s+(.+)$/gm
-  const idCounts = new Map<string, number>()
+  const slugger = new GithubSlugger()
   let match
 
   while ((match = headingRegex.exec(contentWithoutCodeBlocks)) !== null) {
     const level = match[1].length
     const text = match[2].trim()
 
-    // Generate ID from text with improved sanitization
-    let id = generateHeadingId(text)
+    const id = slugger.slug(text)
 
     // Skip empty IDs (edge case: heading with only special characters)
     if (!id) continue
-
-    // Handle duplicate IDs (same logic as rehype-slug)
-    const count = idCounts.get(id) ?? 0
-    idCounts.set(id, count + 1)
-    if (count > 0) {
-      id = `${id}-${count}`
-    }
 
     headings.push({ id, text, level })
   }
@@ -83,17 +77,3 @@ export function extractHeadings(content: string): Heading[] {
   return headings
 }
 
-/**
- * Generates a URL-safe ID from heading text
- *
- * @param text - The heading text to convert to an ID
- * @returns A sanitized, URL-safe string for use as an anchor
- */
-function generateHeadingId(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s가-힣]/gi, '') // Keep Korean characters and alphanumeric
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Collapse multiple hyphens
-    .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
-}

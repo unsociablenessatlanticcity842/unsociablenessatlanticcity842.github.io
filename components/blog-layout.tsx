@@ -66,7 +66,7 @@ export function BlogLayout({ header, children, headings = [], leftSidebar }: Blo
 
         {/* Desktop TOC - sticky, scrolls with content */}
         {hasToc && (
-          <aside className="hidden xl:block w-[220px] shrink-0 ml-10">
+          <aside className="hidden xl:block w-[260px] shrink-0 ml-10">
             <div className="sticky top-20 max-h-[calc(100vh-12rem)] overflow-y-auto">
               <TableOfContents headings={headings} />
             </div>

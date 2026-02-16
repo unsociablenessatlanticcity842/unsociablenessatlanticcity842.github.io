@@ -4,9 +4,9 @@
  * 블로그 포스트 생성 스크립트
  *
  * 사용법:
- *   node scripts/create-post.js
- *   node scripts/create-post.js --template spring
- *   node scripts/create-post.js --template backend --category Backend
+ *   npm run new-post
+ *   npm run new-post -- --template spring
+ *   npm run new-post -- --template backend --category Backend
  */
 
 const fs = require('fs')
@@ -101,6 +101,51 @@ public class ExampleController {
 - [참고 링크]
 `,
   },
+  devops: {
+    category: 'DevOps',
+    tags: ['DevOps', 'CI/CD', 'Infrastructure'],
+    content: `## 개요
+
+[주제 소개 및 도입 배경]
+
+## 아키텍처
+
+[시스템 구성 및 흐름 설명]
+
+\`\`\`mermaid
+graph LR
+    A[소스 코드] --> B[빌드] --> C[테스트] --> D[배포]
+\`\`\`
+
+## 환경 구성
+
+### 사전 준비
+
+[필요한 도구 및 설정]
+
+### 설정 파일
+
+\`\`\`yaml
+# 설정 예제
+\`\`\`
+
+## 구현
+
+[단계별 구현 과정]
+
+## 트러블슈팅
+
+[발생한 문제와 해결 방법]
+
+## 정리
+
+[핵심 내용 요약]
+
+## 참고 자료
+
+- [참고 링크]
+`,
+  },
   algorithm: {
     category: 'Algorithm',
     tags: ['Algorithm', 'Problem Solving'],
@@ -145,6 +190,44 @@ public class ExampleController {
 ## 배운 점
 
 [이 문제를 통해 배운 내용]
+`,
+  },
+  frontend: {
+    category: 'Frontend',
+    tags: ['Frontend', 'React', 'TypeScript'],
+    content: `## 개요
+
+[주제 소개 및 구현 동기]
+
+## 구현
+
+### 컴포넌트 설계
+
+[컴포넌트 구조 설명]
+
+\`\`\`tsx
+// 컴포넌트 예제
+\`\`\`
+
+### 스타일링
+
+[CSS/Tailwind 스타일링 접근법]
+
+### 상태 관리
+
+[상태 관리 방법]
+
+## 결과
+
+[스크린샷이나 데모]
+
+## 정리
+
+[핵심 내용 요약]
+
+## 참고 자료
+
+- [참고 링크]
 `,
   },
   default: {
@@ -252,6 +335,21 @@ async function createPost() {
   const tagsInput = await question(`🏷️  태그 (쉼표로 구분, 기본값: ${template.tags.join(', ')}): `)
   const tags = tagsInput.trim() ? tagsInput.split(',').map((tag) => tag.trim()) : template.tags
 
+  // 커버 이미지
+  const coverImageInput = await question(
+    '🖼️  커버 이미지 경로 (예: /images/posts/my-post.jpg, Enter로 건너뛰기): ',
+  )
+  const coverImage = coverImageInput.trim() || null
+
+  // 시리즈 정보
+  const seriesInput = await question('📚 시리즈 이름 (Enter로 건너뛰기): ')
+  const series = seriesInput.trim() || null
+  let seriesOrder = null
+  if (series) {
+    const orderInput = await question('🔢 시리즈 순서 (숫자): ')
+    seriesOrder = orderInput.trim() ? parseInt(orderInput, 10) : null
+  }
+
   // 저장 위치 입력 받기
   const folderInput = await question(
     '📁 저장 폴더 (content/posts/ 기준, 예: backend/spring, 또는 Enter로 루트): ',
@@ -263,11 +361,9 @@ async function createPost() {
   // 파일 경로 생성
   let filePath
   if (folderInput.trim()) {
-    // 폴더 경로가 입력된 경우
-    const folderPath = folderInput.trim().replace(/^\/+|\/+$/g, '') // 앞뒤 슬래시 제거
+    const folderPath = folderInput.trim().replace(/^\/+|\/+$/g, '')
     filePath = path.join(process.cwd(), 'content', 'posts', folderPath, `${fileName}.mdx`)
   } else {
-    // 입력 없으면 content/posts/ 루트에 생성
     filePath = path.join(process.cwd(), 'content', 'posts', `${fileName}.mdx`)
   }
 
@@ -279,18 +375,32 @@ async function createPost() {
   }
 
   // Frontmatter 생성
-  const frontmatter = `---
-title: "${title}"
-date: "${getCurrentDate()}"
-description: "${description || title}"
-category: "${category}"
-tags: [${tags.map((tag) => `"${tag}"`).join(', ')}]
-author: "Kaameo"
----
-`
+  const frontmatterLines = [
+    '---',
+    `title: "${title}"`,
+    `date: "${getCurrentDate()}"`,
+    `description: "${description || title}"`,
+    `category: "${category}"`,
+    `tags: [${tags.map((tag) => `"${tag}"`).join(', ')}]`,
+    'author: "Kaameo"',
+  ]
+
+  if (coverImage) {
+    frontmatterLines.push(`coverImage: "${coverImage}"`)
+  }
+  if (series) {
+    frontmatterLines.push(`series: "${series}"`)
+  }
+  if (seriesOrder !== null && !isNaN(seriesOrder)) {
+    frontmatterLines.push(`seriesOrder: ${seriesOrder}`)
+  }
+
+  frontmatterLines.push('---')
+
+  const frontmatter = frontmatterLines.join('\n')
 
   // 전체 내용 생성
-  const fullContent = frontmatter + '\n' + template.content
+  const fullContent = frontmatter + '\n\n' + template.content
 
   // 파일 쓰기
   try {
