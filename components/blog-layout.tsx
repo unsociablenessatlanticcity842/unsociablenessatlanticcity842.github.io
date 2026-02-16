@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import { TableOfContents } from '@/components/table-of-contents'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { Button } from '@/components/ui/button'
 import { List } from 'lucide-react'
 
@@ -40,6 +41,9 @@ export function BlogLayout({ header, children, headings = [], leftSidebar }: Blo
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] sm:w-[350px]">
+              <VisuallyHidden>
+                <SheetTitle>목차</SheetTitle>
+              </VisuallyHidden>
               <div className="mt-6">
                 <TableOfContents headings={headings} />
               </div>
