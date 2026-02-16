@@ -20,7 +20,7 @@ export function BlogLayout({
   const [tocOpen, setTocOpen] = React.useState(false)
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-6">
+    <div className="relative mx-auto max-w-[720px] px-4 md:px-6">
       {/* Mobile TOC Button */}
       {headings.length > 0 && (
         <div className="fixed top-20 right-4 z-40 xl:hidden">
@@ -45,29 +45,30 @@ export function BlogLayout({
         </div>
       )}
 
-      {/* Desktop: Content + Right Sidebar */}
-      <div className="grid grid-cols-1 gap-10 xl:grid-cols-[720px_1fr]">
-        {/* Main Content */}
-        <main className="min-w-0">
-          {children}
-        </main>
+      {/* Main Content */}
+      <main className="min-w-0">
+        {children}
+      </main>
 
-        {/* Right Sidebar - Desktop Only */}
-        <aside className="hidden xl:block">
-          <div className="sticky top-20 space-y-8">
-            {headings.length > 0 && (
-              <div className="max-h-[calc(100vh-12rem)] overflow-y-auto">
-                <TableOfContents headings={headings} />
-              </div>
-            )}
-            <AdUnit
-              slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
-              format="vertical"
-              className="w-full"
-            />
+      {/* AdSense - Below Content */}
+      <div className="mt-10">
+        <AdUnit
+          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
+          format="horizontal"
+          className="w-full"
+        />
+      </div>
+
+      {/* Desktop TOC - Floating Right */}
+      {headings.length > 0 && (
+        <aside className="absolute top-0 left-full hidden xl:block ml-10">
+          <div className="sticky top-20">
+            <div className="w-[220px] max-h-[calc(100vh-12rem)] overflow-y-auto">
+              <TableOfContents headings={headings} />
+            </div>
           </div>
         </aside>
-      </div>
+      )}
     </div>
   )
 }
