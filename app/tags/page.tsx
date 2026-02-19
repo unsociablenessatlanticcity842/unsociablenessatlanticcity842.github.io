@@ -8,6 +8,20 @@ import { Hash } from 'lucide-react'
 export const metadata: Metadata = {
   title: '태그 목록',
   description: '모든 태그 목록',
+  alternates: {
+    canonical: '/tags/',
+  },
+  openGraph: {
+    title: '태그 목록 | Kaameo Dev Blog',
+    description: '모든 태그 목록',
+    url: 'https://kaameo.github.io/tags/',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: '태그 목록 | Kaameo Dev Blog',
+    description: '모든 태그 목록',
+  },
 }
 
 export default async function TagsPage() {

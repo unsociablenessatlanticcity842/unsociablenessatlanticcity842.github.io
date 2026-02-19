@@ -1,8 +1,0 @@
-# robots.txt for kaameo.github.io
-# Allow all crawlers to index the site
-
-User-agent: *
-Allow: /
-
-# Sitemap location
-Sitemap: https://kaameo.github.io/sitemap.xml

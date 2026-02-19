@@ -3,8 +3,22 @@ import { getAllPosts } from '@/lib/mdx'
 import { PostsSearchWrapper } from '@/components/posts-search-wrapper'
 
 export const metadata: Metadata = {
-  title: 'All Posts',
+  title: '전체 포스트',
   description: '모든 블로그 포스트 목록',
+  alternates: {
+    canonical: '/posts/',
+  },
+  openGraph: {
+    title: '전체 포스트 | Kaameo Dev Blog',
+    description: '모든 블로그 포스트 목록',
+    url: 'https://kaameo.github.io/posts/',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: '전체 포스트 | Kaameo Dev Blog',
+    description: '모든 블로그 포스트 목록',
+  },
 }
 
 export default async function PostsPage() {

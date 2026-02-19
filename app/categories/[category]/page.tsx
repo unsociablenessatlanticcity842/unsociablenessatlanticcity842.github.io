@@ -39,6 +39,17 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     alternates: {
       canonical: `/categories/${category}/`,
     },
+    openGraph: {
+      title: `${categoryName} 카테고리 | Kaameo Dev Blog`,
+      description: `${categoryName} 카테고리의 포스트 목록`,
+      url: `https://kaameo.github.io/categories/${category}/`,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${categoryName} 카테고리 | Kaameo Dev Blog`,
+      description: `${categoryName} 카테고리의 포스트 목록`,
+    },
   }
 }
 

@@ -1,5 +1,6 @@
 import { getAllPosts } from '@/lib/mdx'
 import HomePageClient from './home-page-client'
+import { WebSiteStructuredData } from '@/components/structured-data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -11,5 +12,10 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const posts = await getAllPosts()
 
-  return <HomePageClient posts={posts} />
+  return (
+    <>
+      <WebSiteStructuredData />
+      <HomePageClient posts={posts} />
+    </>
+  )
 }

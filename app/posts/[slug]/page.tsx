@@ -10,7 +10,7 @@ import { tagToSlug } from '@/lib/slug'
 import Link from 'next/link'
 import Image from 'next/image'
 
-import { BlogPostingStructuredData } from '@/components/structured-data'
+import { BlogPostingStructuredData, BreadcrumbStructuredData } from '@/components/structured-data'
 import { GiscusCommentsWrapper } from '@/components/giscus-comments-wrapper'
 import { AdUnit } from '@/components/analytics/adsense'
 import { RelatedPosts } from '@/components/related-posts'
@@ -48,6 +48,9 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       type: 'article',
       publishedTime: post.date,
       url: `https://kaameo.github.io/posts/${slug}/`,
+      ...(post.tags && post.tags.length > 0 && { tags: post.tags }),
+      ...(post.category && { section: post.category }),
+      authors: [post.author || 'Kaameo'],
     },
     twitter: {
       card: 'summary_large_image',
@@ -85,6 +88,13 @@ export default async function PostPage({ params }: PostPageProps) {
             slug={post.slug}
             category={post.category}
             tags={post.tags}
+          />
+          <BreadcrumbStructuredData
+            items={[
+              { name: '홈', href: '/' },
+              { name: '포스트', href: '/posts/' },
+              { name: post.title, href: `/posts/${post.slug}/` },
+            ]}
           />
           {/* Hero Header with background image */}
           <div className="relative overflow-hidden">

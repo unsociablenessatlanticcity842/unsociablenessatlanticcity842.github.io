@@ -32,6 +32,17 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
     alternates: {
       canonical: `/tags/${tag}/`,
     },
+    openGraph: {
+      title: `${actualTag} 태그 | Kaameo Dev Blog`,
+      description: `${actualTag} 태그가 포함된 포스트 목록`,
+      url: `https://kaameo.github.io/tags/${tag}/`,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${actualTag} 태그 | Kaameo Dev Blog`,
+      description: `${actualTag} 태그가 포함된 포스트 목록`,
+    },
   }
 }
 
