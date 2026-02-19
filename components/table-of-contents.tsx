@@ -49,29 +49,28 @@ export function TableOfContents({ headings, onItemClick }: TableOfContentsProps)
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault()
-    onItemClick?.()
-    const element = document.getElementById(id)
-    if (element) {
-      // More reliable scrolling with IntersectionObserver compensation
-      const yOffset = -100 // Increased offset for better visibility
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
 
-      // Use requestAnimationFrame for smoother scrolling
-      requestAnimationFrame(() => {
+    const scrollToHeading = () => {
+      const element = document.getElementById(id)
+      if (element) {
+        const yOffset = -100
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
         window.scrollTo({ top: y, behavior: 'smooth' })
-      })
+        window.history.replaceState(null, '', `#${id}`)
+        setActiveHeading(id)
+        setTimeout(() => {
+          element.setAttribute('tabindex', '-1')
+          element.focus({ preventScroll: true })
+        }, 500)
+      }
+    }
 
-      // Update URL without causing navigation
-      window.history.replaceState(null, '', `#${id}`)
-
-      // Set active heading immediately for better UX
-      setActiveHeading(id)
-
-      // Set focus for accessibility after scroll
-      setTimeout(() => {
-        element.setAttribute('tabindex', '-1')
-        element.focus({ preventScroll: true })
-      }, 500)
+    if (onItemClick) {
+      onItemClick()
+      // Wait for Sheet close animation & body scroll-lock release
+      setTimeout(scrollToHeading, 350)
+    } else {
+      requestAnimationFrame(scrollToHeading)
     }
   }
 
