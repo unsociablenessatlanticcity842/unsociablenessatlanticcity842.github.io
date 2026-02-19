@@ -82,18 +82,18 @@ const config = {
           css: {
             maxWidth: 'none',
             color: 'hsl(var(--foreground))',
-            fontSize: '20px',
+            fontSize: '1.125rem',
             lineHeight: '1.7',
             letterSpacing: '-0.003em',
             p: {
-              fontSize: '20px',
+              fontSize: '1.125rem',
               letterSpacing: '-0.003em',
               lineHeight: '1.7',
               marginTop: '1.25em',
               marginBottom: '1.25em',
             },
             li: {
-              fontSize: '20px',
+              fontSize: '1.125rem',
               letterSpacing: '-0.003em',
               lineHeight: '1.7',
               marginTop: '0.5em',

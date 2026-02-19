@@ -156,7 +156,7 @@
 @media (max-width: 768px) {
   .prose p,
   .prose li {
-    font-size: 17px;
+    font-size: 1rem;
     line-height: 1.7;
   }
   .prose h1 {
