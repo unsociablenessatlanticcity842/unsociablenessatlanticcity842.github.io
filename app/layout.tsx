@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Noto_Sans_KR, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
@@ -9,7 +9,7 @@ import { GoogleAnalytics } from '@/components/analytics/analytics'
 import { GoogleAdSense } from '@/components/analytics/adsense'
 import { WebVitals } from '@/components/analytics/web-vitals'
 
-const inter = Inter({
+const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
   variable: '--font-sans',
 })
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <body className={`${notoSansKR.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
