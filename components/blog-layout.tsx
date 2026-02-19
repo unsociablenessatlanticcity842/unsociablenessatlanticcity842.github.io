@@ -66,7 +66,7 @@ export function BlogLayout({ header, children, headings = [], leftSidebar }: Blo
         )}
 
         {/* Main Content - centered */}
-        <article className="min-w-0 w-full max-w-[800px]">{children}</article>
+        <div className="min-w-0 w-full max-w-[800px]">{children}</div>
 
         {/* Desktop TOC - sticky, scrolls with content */}
         {hasToc && (
