@@ -29,6 +29,11 @@ export const mdxComponents = {
       </CodeBlock>
     )
   },
+  table: ({ children, ...props }: ComponentProps<'table'>) => (
+    <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+      <table {...props}>{children}</table>
+    </div>
+  ),
   code: ({ children, className }: ComponentProps<'code'>) => {
     // Check if it's inline code (no className means it's not in a pre tag)
     if (!className) {
