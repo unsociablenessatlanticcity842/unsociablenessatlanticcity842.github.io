@@ -7,9 +7,10 @@ import type { Heading } from '@/lib/extract-headings'
 
 interface TableOfContentsProps {
   headings: Heading[]
+  onItemClick?: () => void
 }
 
-export function TableOfContents({ headings }: TableOfContentsProps) {
+export function TableOfContents({ headings, onItemClick }: TableOfContentsProps) {
   const [activeHeading, setActiveHeading] = React.useState<string>('')
 
   React.useEffect(() => {
@@ -48,6 +49,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault()
+    onItemClick?.()
     const element = document.getElementById(id)
     if (element) {
       // More reliable scrolling with IntersectionObserver compensation

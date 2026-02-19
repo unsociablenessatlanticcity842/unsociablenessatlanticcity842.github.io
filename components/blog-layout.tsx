@@ -45,7 +45,7 @@ export function BlogLayout({ header, children, headings = [], leftSidebar }: Blo
                 <SheetTitle>목차</SheetTitle>
               </VisuallyHidden>
               <div className="mt-6">
-                <TableOfContents headings={headings} />
+                <TableOfContents headings={headings} onItemClick={() => setTocOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
