@@ -1,6 +1,13 @@
+import type { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { FileQuestion } from 'lucide-react'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: '페이지를 찾을 수 없습니다',
+  description: '요청하신 페이지가 존재하지 않거나 이동되었습니다.',
+  robots: { index: false, follow: true },
+}
 
 export default function NotFound() {
   return (

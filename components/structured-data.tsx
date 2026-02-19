@@ -35,7 +35,7 @@ export function BlogPostingStructuredData({
     },
     datePublished: date,
     dateModified: date,
-    image: `${SITE_URL}/api/og?title=${encodeURIComponent(title)}`,
+    image: `${SITE_URL}/posts/${slug}/opengraph-image`,
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': postUrl,

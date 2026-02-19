@@ -13,29 +13,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categories = await getCategoriesWithCount()
   const tags = await getTagsWithCount()
 
-  // Static pages
+  // Static pages (no lastModified to avoid unnecessary crawling on every build)
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${SITE_URL}/`,
-      lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1.0,
     },
     {
       url: `${SITE_URL}/posts/`,
-      lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
     {
       url: `${SITE_URL}/about/`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
       url: `${SITE_URL}/tags/`,
-      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    {
+      url: `${SITE_URL}/categories/`,
       changeFrequency: 'weekly',
       priority: 0.6,
     },
@@ -52,7 +53,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Category pages
   const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
     url: `${SITE_URL}/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}/`,
-    lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.7,
   }))
@@ -60,7 +60,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Tag pages
   const tagPages: MetadataRoute.Sitemap = tags.map((tag) => ({
     url: `${SITE_URL}/tags/${tagToSlug(tag.name)}/`,
-    lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.6,
   }))

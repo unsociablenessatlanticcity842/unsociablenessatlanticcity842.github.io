@@ -7,6 +7,7 @@ import { Footer } from '@/components/footer'
 import { SkipToContent } from '@/components/skip-to-content'
 import { GoogleAnalytics } from '@/components/analytics/analytics'
 import { GoogleAdSense } from '@/components/analytics/adsense'
+import { WebVitals } from '@/components/analytics/web-vitals'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -77,6 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <GoogleAdSense />
           <GoogleAnalytics />
+          <WebVitals />
         </ThemeProvider>
       </body>
     </html>
