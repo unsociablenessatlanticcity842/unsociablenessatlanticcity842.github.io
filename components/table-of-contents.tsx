@@ -65,11 +65,12 @@ export function TableOfContents({ headings, onItemClick }: TableOfContentsProps)
       }
     }
 
-    if (onItemClick) {
+    if (onItemClick && window.innerWidth < 768) {
+      // Mobile: close Sheet first, then scroll after animation & scroll-lock release
       onItemClick()
-      // Wait for Sheet close animation & body scroll-lock release
       setTimeout(scrollToHeading, 350)
     } else {
+      // Desktop: scroll immediately (Sheet stays open)
       requestAnimationFrame(scrollToHeading)
     }
   }
