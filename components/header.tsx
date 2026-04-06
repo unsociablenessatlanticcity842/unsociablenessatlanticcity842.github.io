@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -24,7 +25,8 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 md:px-6">
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold tracking-tight">
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <Image src="/favicon.svg" alt="" width={72} height={72} className="h-18 w-18" aria-hidden="true" />
           Kaameo.dev
         </Link>
 
