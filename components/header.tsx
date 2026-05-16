@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { Moon, Sun, Menu, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -74,6 +74,7 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[260px]">
+              <SheetTitle className="sr-only">Navigation menu</SheetTitle>
               <nav className="flex flex-col gap-2 mt-8">
                 {navItems.map((item) => (
                   <Link
