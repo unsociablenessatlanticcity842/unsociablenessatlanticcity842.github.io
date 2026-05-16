@@ -4,15 +4,22 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { HorizontalPostCard } from '@/components/horizontal-post-card'
 import { AuthorCard } from '@/components/author-card'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles, Hash } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import type { Post } from '@/lib/mdx'
 
-interface HomePageClientProps {
-  posts: Post[]
+interface TopTag {
+  name: string
+  count: number
+  slug: string
 }
 
-export default function HomePageClient({ posts }: HomePageClientProps) {
+interface HomePageClientProps {
+  posts: Post[]
+  topTags: TopTag[]
+}
+
+export default function HomePageClient({ posts, topTags }: HomePageClientProps) {
   const featuredPost = posts[0]
   const recentPosts = posts.slice(1, 7)
 
@@ -132,6 +139,41 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
             ))}
           </div>
         </section>
+
+        {/* Browse by Topic */}
+        {topTags.length > 0 && (
+          <section className="pb-12">
+            <div className="mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">주제로 둘러보기</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  관심 있는 태그를 선택해보세요
+                </p>
+              </div>
+              <Link
+                href="/tags"
+                className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-accent transition-colors duration-200"
+              >
+                전체 태그
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {topTags.map((tag) => (
+                <Link
+                  key={tag.slug}
+                  href={`/tags/${tag.slug}`}
+                  className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:text-foreground hover:shadow-[0_8px_20px_-12px_hsl(var(--accent)/0.3)]"
+                >
+                  <Hash className="h-3.5 w-3.5 text-accent" />
+                  <span className="font-medium">{tag.name}</span>
+                  <span className="text-xs text-muted-foreground/70">{tag.count}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <AuthorCard />
       </div>

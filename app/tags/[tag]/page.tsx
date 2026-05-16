@@ -62,7 +62,7 @@ export default async function TagPage({ params }: TagPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-6 py-12 md:py-16">
+    <div className="mx-auto max-w-[800px] px-4 md:px-6 py-12 md:py-16">
       <div className="mb-10 md:mb-12">
         <div className="mb-3 flex items-center gap-2">
           <span className="h-px w-8 bg-accent" />
@@ -77,7 +77,7 @@ export default async function TagPage({ params }: TagPageProps) {
         <p className="mt-3 text-muted-foreground">총 {posts.length}개의 포스트가 있습니다.</p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {posts.map((post) => (
           <PostCard key={post.slug} post={post} />
         ))}

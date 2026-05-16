@@ -2,8 +2,6 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllTags, getAllPosts } from '@/lib/mdx'
 import { tagToSlug } from '@/lib/slug'
-import { Badge } from '@/components/ui/badge'
-import { Hash } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: '태그 목록',
@@ -37,36 +35,35 @@ export default async function TagsPage() {
     .sort((a, b) => b.count - a.count) // Sort by count descending
 
   return (
-    <div className="container py-10">
-      <div className="space-y-4 pb-8">
-        <h1 className="text-4xl font-bold flex items-center gap-2">
-          <Hash className="h-8 w-8" />
-          태그 목록
-        </h1>
-        <p className="text-muted-foreground">총 {tags.length}개의 태그가 있습니다.</p>
+    <div className="mx-auto max-w-[800px] px-4 md:px-6 py-12 md:py-16">
+      <div className="mb-10 md:mb-12">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="h-px w-8 bg-accent" />
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+            Tags
+          </span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">태그 목록</h1>
+        <p className="mt-3 text-muted-foreground">총 {tags.length}개의 태그가 있습니다.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         {tagCounts.map((tag) => (
           <Link
             key={tag.name}
             href={`/tags/${tag.slug}`}
-            className="group relative overflow-hidden rounded-lg border bg-card p-6 transition-all hover:shadow-lg"
+            className="group flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_8px_24px_-12px_hsl(var(--accent)/0.25)]"
           >
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                  #{tag.name}
-                </h2>
-                <p className="text-sm text-muted-foreground">{tag.count}개의 포스트</p>
-              </div>
-              <Badge variant="secondary" className="text-lg px-3 py-1">
-                {tag.count}
-              </Badge>
+            <div className="min-w-0">
+              <h2 className="truncate text-base font-semibold transition-colors group-hover:text-accent">
+                <span className="text-muted-foreground">#</span>
+                {tag.name}
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">{tag.count}개의 포스트</p>
             </div>
-
-            {/* Hover effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <span className="ml-3 inline-flex h-7 min-w-[28px] items-center justify-center rounded-full bg-highlight-bg px-2 text-xs font-semibold text-highlight-foreground">
+              {tag.count}
+            </span>
           </Link>
         ))}
       </div>

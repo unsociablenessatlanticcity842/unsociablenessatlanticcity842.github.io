@@ -7,11 +7,19 @@ const tocWidths = ['85%', '70%', '60%', '78%', '55%', '82%', '68%']
 export default function PostLoading() {
   return (
     <>
-      {/* Hero header — full-bleed dark, mirrors real post hero */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/15 to-secondary/30 dark:from-primary/40 dark:via-primary/20 dark:to-secondary/40" />
-        <div className="absolute inset-0 bg-black/50" />
+      {/* Hero header — mirrors the real post hero (dark warm + coral mesh) */}
+      <div className="relative overflow-hidden bg-[hsl(30,8%,10%)]">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 -left-16 h-[420px] w-[420px] rounded-full bg-accent/25 blur-3xl" />
+          <div className="absolute -bottom-32 -right-10 h-[480px] w-[480px] rounded-full bg-accent/15 blur-3xl" />
+          <div className="absolute top-1/3 left-1/2 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
+        </div>
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/30 to-transparent" />
         <header className="relative z-10 mx-auto max-w-[800px] px-6 py-12 md:py-20">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="h-px w-8 bg-accent" />
+            <Skeleton className="h-3 w-16 bg-white/15" />
+          </div>
           <Skeleton className="h-9 md:h-11 w-3/4 bg-white/20" />
           <Skeleton className="mt-3 h-9 md:h-11 w-1/2 bg-white/20" />
           <Skeleton className="mt-5 h-5 w-full max-w-md bg-white/15" />

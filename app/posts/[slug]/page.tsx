@@ -88,25 +88,53 @@ export default async function PostPage({ params }: PostPageProps) {
               { name: post.title, href: `/posts/${post.slug}/` },
             ]}
           />
-          {/* Hero Header with background image */}
-          <div className="relative overflow-hidden">
-            {/* Background */}
+          {/* Hero Header */}
+          <div className="relative overflow-hidden bg-[hsl(30,8%,10%)]">
             {post.coverImage ? (
-              <Image
-                src={post.coverImage}
-                alt={post.title}
-                fill
-                unoptimized
-                className="object-cover"
-              />
+              <>
+                <Image
+                  src={post.coverImage}
+                  alt={post.title}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/30" />
+              </>
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-secondary/20 dark:from-primary/40 dark:via-primary/20 dark:to-secondary/40" />
+              <>
+                {/* Coral mesh orbs */}
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                  <div className="absolute -top-24 -left-16 h-[420px] w-[420px] rounded-full bg-accent/25 blur-3xl" />
+                  <div className="absolute -bottom-32 -right-10 h-[480px] w-[480px] rounded-full bg-accent/15 blur-3xl" />
+                  <div className="absolute top-1/3 left-1/2 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
+                </div>
+                {/* Decorative wordmark */}
+                {(post.category || post.tags?.[0]) && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 flex items-center justify-end overflow-hidden pr-4 md:pr-12"
+                  >
+                    <span className="select-none font-mono text-[120px] md:text-[180px] font-bold uppercase tracking-tighter text-white/[0.05] whitespace-nowrap leading-none">
+                      {post.category ?? post.tags?.[0]}
+                    </span>
+                  </div>
+                )}
+                {/* Subtle top fade for header chrome */}
+                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/30 to-transparent" />
+              </>
             )}
-            {/* Overlay for readability */}
-            <div className="absolute inset-0 bg-black/50" />
 
             {/* Header content */}
             <header className="relative z-10 mx-auto max-w-[800px] px-6 py-12 md:py-20 text-white">
+              {(post.category || post.tags?.[0]) && (
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="h-px w-8 bg-accent" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+                    {post.category ?? post.tags?.[0]}
+                  </span>
+                </div>
+              )}
               <h1 className="text-3xl md:text-[40px] font-bold leading-tight tracking-tight">
                 {post.title}
               </h1>

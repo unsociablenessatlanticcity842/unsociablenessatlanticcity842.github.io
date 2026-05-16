@@ -23,9 +23,9 @@ export function AuthorCard() {
             <Image
               src="/favicon.svg"
               alt="Kaameo"
-              width={72}
-              height={72}
-              className="relative h-18 w-18 rounded-full border border-border bg-background p-1"
+              width={56}
+              height={56}
+              className="relative h-14 w-14 rounded-full border border-border bg-background p-1"
             />
           </div>
 

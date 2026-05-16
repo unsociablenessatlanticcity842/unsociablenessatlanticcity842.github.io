@@ -16,18 +16,18 @@
     --secondary-foreground: 30 8% 12%;
     --muted: 40 20% 96%;
     --muted-foreground: 30 5% 45%;
-    --accent: 14 92% 60%; /* warm coral */
+    --accent: 152 65% 42%; /* emerald */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     --border: 40 12% 91%; /* warm border */
     --input: 40 12% 91%;
-    --ring: 14 92% 60%; /* coral focus ring (visible against charcoal) */
+    --ring: 152 65% 42%; /* emerald focus ring */
     --radius: 0.625rem;
 
-    --highlight: 14 92% 60%;
-    --highlight-foreground: 14 80% 32%;
-    --highlight-bg: 14 100% 96%;
+    --highlight: 152 65% 42%;
+    --highlight-foreground: 152 70% 22%;
+    --highlight-bg: 152 60% 95%;
   }
 
   .dark {
@@ -43,17 +43,17 @@
     --secondary-foreground: 40 15% 92%;
     --muted: 30 4% 16%;
     --muted-foreground: 30 5% 64%;
-    --accent: 14 88% 64%;
+    --accent: 152 60% 55%;
     --accent-foreground: 30 6% 7%;
     --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 95%;
     --border: 30 4% 16%;
     --input: 30 4% 16%;
-    --ring: 14 88% 64%;
+    --ring: 152 60% 55%;
 
-    --highlight: 14 88% 64%;
-    --highlight-foreground: 14 95% 85%;
-    --highlight-bg: 14 40% 18%;
+    --highlight: 152 60% 55%;
+    --highlight-foreground: 152 70% 82%;
+    --highlight-bg: 152 50% 16%;
   }
 }
 
