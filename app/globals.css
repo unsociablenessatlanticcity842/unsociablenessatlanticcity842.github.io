@@ -4,48 +4,56 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* Pure white #ffffff */
-    --foreground: 0 0% 14%; /* #242424 */
+    --background: 40 24% 99%; /* warm off-white #fdfcfa */
+    --foreground: 240 10% 12%; /* near-black with cool tint */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 14%;
+    --card-foreground: 240 10% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 14%;
-    --primary: 231 64% 55%; /* dev.to blue #3b49df */
+    --popover-foreground: 240 10% 12%;
+    --primary: 244 75% 59%; /* deep indigo #4f46e5 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%; /* #f5f5f5 */
-    --secondary-foreground: 0 0% 14%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 42%; /* #6b6b6b */
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 14%;
+    --secondary: 40 20% 96%; /* warm light gray */
+    --secondary-foreground: 240 10% 12%;
+    --muted: 40 20% 96%;
+    --muted-foreground: 240 5% 45%;
+    --accent: 14 92% 67%; /* warm coral #f97366 */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 94%; /* #f0f0f0 */
-    --input: 0 0% 94%;
-    --ring: 231 64% 55%;
-    --radius: 0.5rem;
+    --border: 40 12% 91%; /* warm border */
+    --input: 40 12% 91%;
+    --ring: 244 75% 59%;
+    --radius: 0.625rem;
+
+    --highlight: 14 92% 67%; /* coral for tag/featured emphasis */
+    --highlight-foreground: 14 80% 32%;
+    --highlight-bg: 14 100% 96%;
   }
 
   .dark {
-    --background: 0 0% 7%; /* #121212 */
-    --foreground: 0 0% 90%; /* #e5e5e5 */
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 90%;
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 90%;
-    --primary: 231 64% 60%; /* Lighter blue for dark mode */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 64%;
-    --accent: 0 0% 16%;
-    --accent-foreground: 0 0% 90%;
+    --background: 240 10% 6%; /* deep cool black */
+    --foreground: 40 15% 92%; /* warm off-white */
+    --card: 240 8% 10%;
+    --card-foreground: 40 15% 92%;
+    --popover: 240 8% 12%;
+    --popover-foreground: 40 15% 92%;
+    --primary: 244 80% 70%; /* brighter indigo for dark */
+    --primary-foreground: 240 10% 6%;
+    --secondary: 240 6% 16%;
+    --secondary-foreground: 40 15% 92%;
+    --muted: 240 6% 16%;
+    --muted-foreground: 240 5% 64%;
+    --accent: 14 88% 65%;
+    --accent-foreground: 240 10% 6%;
     --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 95%;
-    --border: 0 0% 10%; /* #1a1a1a */
-    --input: 0 0% 16%;
-    --ring: 231 64% 60%;
+    --border: 240 6% 16%;
+    --input: 240 6% 16%;
+    --ring: 244 80% 70%;
+
+    --highlight: 14 88% 65%;
+    --highlight-foreground: 14 95% 85%;
+    --highlight-bg: 14 40% 18%;
   }
 }
 
@@ -57,11 +65,35 @@
     @apply bg-background text-foreground;
     font-feature-settings:
       'rlig' 1,
-      'calt' 1;
+      'calt' 1,
+      'ss03' 1;
     overflow-y: scroll;
     transition:
       background-color 0.3s ease,
       color 0.3s ease;
+  }
+
+  /* Text selection */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.18);
+    color: hsl(var(--foreground));
+  }
+
+  /* Scrollbar - subtle, theme-aware */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
   }
 }
 

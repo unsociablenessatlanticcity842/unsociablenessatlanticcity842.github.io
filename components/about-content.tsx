@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Github, Globe, BookOpen, Download } from 'lucide-react'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 type Language = 'en' | 'ko'
 
@@ -78,6 +80,8 @@ const content: Record<Language, Content> = {
 
 export function AboutContent() {
   const [lang, setLang] = useState<Language>('ko')
+  const [ghLoaded, setGhLoaded] = useState(false)
+  const [ghError, setGhError] = useState(false)
   const t = content[lang]
 
   return (
@@ -173,12 +177,48 @@ export function AboutContent() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://ghchart.rshah.org/kaameo"
-              alt="GitHub Contributions"
-              className="w-full dark:invert dark:hue-rotate-180"
-            />
+            <div className="relative w-full" style={{ aspectRatio: '53 / 8' }}>
+              {/* Skeleton — visible until image loads */}
+              {!ghLoaded && !ghError && (
+                <div
+                  className="absolute inset-0 grid grid-cols-[repeat(53,_minmax(0,1fr))] grid-rows-7 gap-[2px]"
+                  aria-hidden="true"
+                >
+                  {Array.from({ length: 53 * 7 }).map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-full w-full rounded-[2px]"
+                      style={{ animationDelay: `${(i % 53) * 18}ms` }}
+                    />
+                  ))}
+                  <span className="sr-only">
+                    {lang === 'ko' ? 'GitHub 활동 불러오는 중' : 'Loading GitHub activity'}
+                  </span>
+                </div>
+              )}
+
+              {/* Error fallback */}
+              {ghError && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
+                  {lang === 'ko'
+                    ? 'GitHub 활동을 불러오지 못했습니다.'
+                    : 'Could not load GitHub activity.'}
+                </div>
+              )}
+
+              {/* Image — fades in once loaded */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://ghchart.rshah.org/kaameo"
+                alt="GitHub Contributions"
+                onLoad={() => setGhLoaded(true)}
+                onError={() => setGhError(true)}
+                className={cn(
+                  'absolute inset-0 h-full w-full object-contain transition-opacity duration-500 dark:invert dark:hue-rotate-180',
+                  ghLoaded ? 'opacity-100' : 'opacity-0',
+                )}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>

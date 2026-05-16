@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Noto_Sans_KR, JetBrains_Mono } from 'next/font/google'
+import { JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
@@ -8,11 +8,6 @@ import { SkipToContent } from '@/components/skip-to-content'
 import { GoogleAnalytics } from '@/components/analytics/analytics'
 import { GoogleAdSense } from '@/components/analytics/adsense'
 import { WebVitals } from '@/components/analytics/web-vitals'
-
-const notoSansKR = Noto_Sans_KR({
-  subsets: ['latin'],
-  variable: '--font-sans',
-})
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -61,7 +56,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${notoSansKR.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <head>
+        <link
+          rel="stylesheet"
+          as="style"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+      </head>
+      <body className={`${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

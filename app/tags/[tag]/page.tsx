@@ -62,13 +62,22 @@ export default async function TagPage({ params }: TagPageProps) {
   }
 
   return (
-    <div className="container py-10">
-      <div className="space-y-4 pb-8">
-        <h1 className="text-4xl font-bold">#{actualTag}</h1>
-        <p className="text-muted-foreground">총 {posts.length}개의 포스트가 있습니다.</p>
+    <div className="mx-auto max-w-[1100px] px-4 md:px-6 py-12 md:py-16">
+      <div className="mb-10 md:mb-12">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="h-px w-8 bg-accent" />
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+            Tag
+          </span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+          <span className="text-muted-foreground">#</span>
+          {actualTag}
+        </h1>
+        <p className="mt-3 text-muted-foreground">총 {posts.length}개의 포스트가 있습니다.</p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
           <PostCard key={post.slug} post={post} />
         ))}
