@@ -35,10 +35,8 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
             개발 여정을 기록합니다
           </span>
           <h1 className="mt-5 text-4xl md:text-5xl font-bold tracking-tight leading-[1.1]">
-            Kaameo
-            <span className="text-primary">.</span>
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              dev
+              Kaameo
             </span>
           </h1>
           <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-[560px] leading-relaxed">

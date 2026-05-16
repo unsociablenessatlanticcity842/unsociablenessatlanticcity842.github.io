@@ -27,7 +27,7 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
           <Image src="/favicon.svg" alt="" width={72} height={72} className="h-18 w-18" aria-hidden="true" />
-          Kaameo.dev
+          Kaameo
         </Link>
 
         {/* Desktop Nav */}
