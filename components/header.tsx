@@ -7,8 +7,9 @@ import { useTheme } from 'next-themes'
 import { Moon, Sun, Menu, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { COMMAND_PALETTE_EVENT } from '@/components/command-palette'
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -19,7 +20,14 @@ const navItems = [
 export function Header() {
   const { theme, setTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isMac, setIsMac] = useState(false)
   const pathname = usePathname()
+
+  useEffect(() => {
+    setIsMac(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
+  }, [])
+
+  const openPalette = () => window.dispatchEvent(new Event(COMMAND_PALETTE_EVENT))
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -50,11 +58,30 @@ export function Header() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
-          <Link href="/posts?search=true">
-            <Button variant="ghost" size="icon" aria-label="Search">
-              <Search className="h-5 w-5" />
-            </Button>
-          </Link>
+          {/* Desktop: clickable search pill with shortcut hint */}
+          <button
+            type="button"
+            onClick={openPalette}
+            aria-label="검색 (Cmd+K)"
+            className="hidden sm:flex h-9 items-center gap-2 rounded-md border border-border bg-secondary/40 px-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary"
+          >
+            <Search className="h-4 w-4" />
+            <span className="pr-1">검색</span>
+            <kbd className="hidden md:inline-flex items-center gap-0.5 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono font-medium text-muted-foreground">
+              {isMac ? '⌘' : 'Ctrl'} K
+            </kbd>
+          </button>
+
+          {/* Mobile: icon only */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="sm:hidden"
+            aria-label="검색"
+            onClick={openPalette}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
 
           <Button
             variant="ghost"

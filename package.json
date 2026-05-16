@@ -27,6 +27,7 @@
     "@radix-ui/react-visually-hidden": "^1.2.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "cmdk": "^1.1.1",
     "date-fns": "^3.3.1",
     "framer-motion": "^12.23.12",
     "gray-matter": "^4.0.3",

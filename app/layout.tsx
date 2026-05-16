@@ -7,6 +7,7 @@ import { Footer } from '@/components/footer'
 import { SkipToContent } from '@/components/skip-to-content'
 import { GoogleAnalytics } from '@/components/analytics/analytics'
 import { WebVitals } from '@/components/analytics/web-vitals'
+import { CommandPaletteWrapper } from '@/components/command-palette-wrapper'
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
             <Footer />
           </div>
+          <CommandPaletteWrapper />
           <GoogleAnalytics />
           <WebVitals />
         </ThemeProvider>

@@ -68,7 +68,10 @@ export function BlogLayout({ header, children, headings = [] }: BlogLayoutProps)
         {/* Desktop TOC - sticky */}
         {hasToc && (
           <aside className="hidden xl:block">
-            <div className="sticky top-20 max-h-[calc(100vh-12rem)] overflow-y-auto">
+            <div
+              data-toc-scroll
+              className="sticky top-20 max-h-[calc(100vh-12rem)] overflow-y-auto scroll-smooth"
+            >
               <TableOfContents headings={headings} />
             </div>
           </aside>

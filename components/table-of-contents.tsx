@@ -12,6 +12,7 @@ interface TableOfContentsProps {
 
 export function TableOfContents({ headings, onItemClick }: TableOfContentsProps) {
   const [activeHeading, setActiveHeading] = React.useState<string>('')
+  const itemRefs = React.useRef<Map<string, HTMLAnchorElement | null>>(new Map())
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(
@@ -46,6 +47,33 @@ export function TableOfContents({ headings, onItemClick }: TableOfContentsProps)
       })
     }
   }, [headings])
+
+  // Keep the active TOC item visible inside the sidebar's scroll container.
+  // Scrolls only the marked [data-toc-scroll] ancestor, never the page itself.
+  React.useEffect(() => {
+    if (!activeHeading) return
+    const el = itemRefs.current.get(activeHeading)
+    if (!el) return
+
+    const scrollParent = el.closest('[data-toc-scroll]') as HTMLElement | null
+    if (!scrollParent) return
+
+    const parentRect = scrollParent.getBoundingClientRect()
+    const elRect = el.getBoundingClientRect()
+    const buffer = 8 // px — don't trigger when item is right at the edge
+
+    const isAbove = elRect.top < parentRect.top + buffer
+    const isBelow = elRect.bottom > parentRect.bottom - buffer
+
+    if (isAbove || isBelow) {
+      const targetTop =
+        scrollParent.scrollTop +
+        (elRect.top - parentRect.top) -
+        parentRect.height / 2 +
+        elRect.height / 2
+      scrollParent.scrollTo({ top: targetTop, behavior: 'smooth' })
+    }
+  }, [activeHeading])
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault()
@@ -90,6 +118,10 @@ export function TableOfContents({ headings, onItemClick }: TableOfContentsProps)
           return (
             <li key={`${heading.id}-${index}`}>
               <a
+                ref={(el) => {
+                  if (el) itemRefs.current.set(heading.id, el)
+                  else itemRefs.current.delete(heading.id)
+                }}
                 href={`#${heading.id}`}
                 onClick={(e) => handleClick(e, heading.id)}
                 className={cn(
