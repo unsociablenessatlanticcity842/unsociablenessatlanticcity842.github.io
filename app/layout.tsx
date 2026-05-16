@@ -6,7 +6,6 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { SkipToContent } from '@/components/skip-to-content'
 import { GoogleAnalytics } from '@/components/analytics/analytics'
-import { GoogleAdSense } from '@/components/analytics/adsense'
 import { WebVitals } from '@/components/analytics/web-vitals'
 
 const jetbrainsMono = JetBrains_Mono({
@@ -79,7 +78,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
             <Footer />
           </div>
-          <GoogleAdSense />
           <GoogleAnalytics />
           <WebVitals />
         </ThemeProvider>

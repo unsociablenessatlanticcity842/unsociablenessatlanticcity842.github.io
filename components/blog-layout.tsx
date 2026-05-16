@@ -13,10 +13,9 @@ interface BlogLayoutProps {
   header?: React.ReactNode
   children: React.ReactNode
   headings?: Heading[]
-  leftSidebar?: React.ReactNode
 }
 
-export function BlogLayout({ header, children, headings = [], leftSidebar }: BlogLayoutProps) {
+export function BlogLayout({ header, children, headings = [] }: BlogLayoutProps) {
   const [tocOpen, setTocOpen] = React.useState(false)
   const hasToc = headings.length > 0
 
@@ -52,25 +51,23 @@ export function BlogLayout({ header, children, headings = [], leftSidebar }: Blo
         </div>
       )}
 
-      {/* Content + TOC */}
-      <div className="flex justify-center px-4 md:px-6 pt-16">
-        {/* Left Sidebar - ad or spacer to keep main centered */}
-        {hasToc && (
-          <aside className="hidden xl:block w-[220px] shrink-0 mr-10">
-            {leftSidebar && (
-              <div className="sticky top-20">
-                {leftSidebar}
-              </div>
-            )}
-          </aside>
-        )}
+      {/* Content + TOC — symmetric grid keeps main perfectly centered */}
+      <div
+        className={
+          hasToc
+            ? 'mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-10 px-4 md:px-6 pt-16 xl:grid-cols-[260px_minmax(0,800px)_260px]'
+            : 'mx-auto w-full max-w-[800px] px-4 md:px-6 pt-16'
+        }
+      >
+        {/* Left spacer — keeps body centered (symmetric with right TOC) */}
+        {hasToc && <div aria-hidden="true" className="hidden xl:block" />}
 
-        {/* Main Content - centered */}
-        <div className="min-w-0 w-full max-w-[800px]">{children}</div>
+        {/* Main Content */}
+        <div className="min-w-0 w-full">{children}</div>
 
-        {/* Desktop TOC - sticky, scrolls with content */}
+        {/* Desktop TOC - sticky */}
         {hasToc && (
-          <aside className="hidden xl:block w-[260px] shrink-0 ml-10">
+          <aside className="hidden xl:block">
             <div className="sticky top-20 max-h-[calc(100vh-12rem)] overflow-y-auto">
               <TableOfContents headings={headings} />
             </div>

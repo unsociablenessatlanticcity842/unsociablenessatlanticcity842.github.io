@@ -12,7 +12,6 @@ import Image from 'next/image'
 
 import { BlogPostingStructuredData, BreadcrumbStructuredData } from '@/components/structured-data'
 import { GiscusCommentsWrapper } from '@/components/giscus-comments-wrapper'
-import { AdUnit } from '@/components/analytics/adsense'
 import { RelatedPosts } from '@/components/related-posts'
 
 interface PostPageProps {
@@ -71,13 +70,6 @@ export default async function PostPage({ params }: PostPageProps) {
   return (
     <BlogLayout
       headings={post.headings}
-      leftSidebar={
-        <AdUnit
-          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
-          format="vertical"
-          className="w-full"
-        />
-      }
       header={
         <>
           <BlogPostingStructuredData
@@ -160,13 +152,6 @@ export default async function PostPage({ params }: PostPageProps) {
             ))}
           </div>
         )}
-
-        {/* Ad - mobile/tablet only (desktop shows in left sidebar) */}
-        <AdUnit
-          slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || ''}
-          format="auto"
-          className="my-8 xl:hidden"
-        />
 
         {/* Comments */}
         <GiscusCommentsWrapper className="border-t pt-8 mt-12" />

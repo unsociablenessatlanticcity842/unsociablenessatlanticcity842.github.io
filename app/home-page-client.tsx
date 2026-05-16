@@ -29,7 +29,7 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
           <div className="absolute bottom-0 left-1/3 h-[280px] w-[280px] rounded-full bg-primary/10 blur-3xl" />
         </div>
 
-        <div className="mx-auto max-w-[720px] px-4 md:px-6 pt-16 pb-12 md:pt-24 md:pb-16">
+        <div className="mx-auto max-w-[800px] px-4 md:px-6 pt-16 pb-12 md:pt-24 md:pb-16">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
             <Sparkles className="h-3 w-3 text-accent" />
             개발 여정을 기록합니다
@@ -48,7 +48,7 @@ export default function HomePageClient({ posts }: HomePageClientProps) {
         </div>
       </section>
 
-      <div className="mx-auto max-w-[720px] px-4 md:px-6">
+      <div className="mx-auto max-w-[800px] px-4 md:px-6">
         {/* Featured Post — visual hero card */}
         {featuredPost && (
           <section className="py-10 md:py-12">

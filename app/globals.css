@@ -5,53 +5,53 @@
 @layer base {
   :root {
     --background: 40 24% 99%; /* warm off-white #fdfcfa */
-    --foreground: 240 10% 12%; /* near-black with cool tint */
+    --foreground: 30 8% 12%; /* warm near-black */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 12%;
+    --card-foreground: 30 8% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 12%;
-    --primary: 244 75% 59%; /* deep indigo #4f46e5 */
-    --primary-foreground: 0 0% 100%;
+    --popover-foreground: 30 8% 12%;
+    --primary: 30 8% 14%; /* charcoal — editorial near-black */
+    --primary-foreground: 40 24% 99%;
     --secondary: 40 20% 96%; /* warm light gray */
-    --secondary-foreground: 240 10% 12%;
+    --secondary-foreground: 30 8% 12%;
     --muted: 40 20% 96%;
-    --muted-foreground: 240 5% 45%;
-    --accent: 14 92% 67%; /* warm coral #f97366 */
+    --muted-foreground: 30 5% 45%;
+    --accent: 14 92% 60%; /* warm coral */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     --border: 40 12% 91%; /* warm border */
     --input: 40 12% 91%;
-    --ring: 244 75% 59%;
+    --ring: 14 92% 60%; /* coral focus ring (visible against charcoal) */
     --radius: 0.625rem;
 
-    --highlight: 14 92% 67%; /* coral for tag/featured emphasis */
+    --highlight: 14 92% 60%;
     --highlight-foreground: 14 80% 32%;
     --highlight-bg: 14 100% 96%;
   }
 
   .dark {
-    --background: 240 10% 6%; /* deep cool black */
+    --background: 30 6% 7%; /* warm deep black */
     --foreground: 40 15% 92%; /* warm off-white */
-    --card: 240 8% 10%;
+    --card: 30 5% 10%;
     --card-foreground: 40 15% 92%;
-    --popover: 240 8% 12%;
+    --popover: 30 5% 12%;
     --popover-foreground: 40 15% 92%;
-    --primary: 244 80% 70%; /* brighter indigo for dark */
-    --primary-foreground: 240 10% 6%;
-    --secondary: 240 6% 16%;
+    --primary: 40 15% 92%; /* near-white on dark */
+    --primary-foreground: 30 6% 7%;
+    --secondary: 30 4% 16%;
     --secondary-foreground: 40 15% 92%;
-    --muted: 240 6% 16%;
-    --muted-foreground: 240 5% 64%;
-    --accent: 14 88% 65%;
-    --accent-foreground: 240 10% 6%;
+    --muted: 30 4% 16%;
+    --muted-foreground: 30 5% 64%;
+    --accent: 14 88% 64%;
+    --accent-foreground: 30 6% 7%;
     --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 95%;
-    --border: 240 6% 16%;
-    --input: 240 6% 16%;
-    --ring: 244 80% 70%;
+    --border: 30 4% 16%;
+    --input: 30 4% 16%;
+    --ring: 14 88% 64%;
 
-    --highlight: 14 88% 65%;
+    --highlight: 14 88% 64%;
     --highlight-foreground: 14 95% 85%;
     --highlight-bg: 14 40% 18%;
   }

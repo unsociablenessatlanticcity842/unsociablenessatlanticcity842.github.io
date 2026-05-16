@@ -3,7 +3,7 @@ import { HorizontalPostCardSkeleton } from '@/components/horizontal-post-card-sk
 
 export default function PostsLoading() {
   return (
-    <div className="mx-auto max-w-[720px] px-4 md:px-6 py-10 md:py-14">
+    <div className="mx-auto max-w-[800px] px-4 md:px-6 py-12 md:py-16">
       {/* "Posts" Title Skeleton */}
       <Skeleton className="h-9 md:h-10 w-24 mb-8" />
 

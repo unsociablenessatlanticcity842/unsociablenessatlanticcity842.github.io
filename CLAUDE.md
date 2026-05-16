@@ -73,7 +73,6 @@ Tags support Korean characters. `lib/slug.ts` provides `tagToSlug()` (tag → UR
 
 All optional, configured via environment variables (see `.env.example`):
 - **Google Analytics 4**: `NEXT_PUBLIC_GA_MEASUREMENT_ID`
-- **Google AdSense**: `NEXT_PUBLIC_ADSENSE_CLIENT_ID`, `NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR`
 - **Giscus comments**: `NEXT_PUBLIC_GISCUS_REPO`, `NEXT_PUBLIC_GISCUS_REPO_ID`, `NEXT_PUBLIC_GISCUS_CATEGORY`, `NEXT_PUBLIC_GISCUS_CATEGORY_ID`
 - **SEO**: `app/sitemap.ts`, `app/robots.ts`, `app/opengraph-image.tsx`, structured data (BlogPosting + BreadcrumbList + WebSite schemas in `components/structured-data.tsx`)
 

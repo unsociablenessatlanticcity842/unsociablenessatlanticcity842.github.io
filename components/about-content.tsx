@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Github, Globe, BookOpen, Download } from 'lucide-react'
-import Link from 'next/link'
+import { Github, Globe, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type Language = 'en' | 'ko'
@@ -20,10 +19,6 @@ interface Content {
       title: string
       items: string[]
     }
-  }
-  links: {
-    velog: string
-    github: string
   }
 }
 
@@ -47,10 +42,6 @@ const content: Record<Language, Content> = {
         ],
       },
     },
-    links: {
-      velog: 'My Velog Blog',
-      github: 'GitHub',
-    },
   },
   ko: {
     tagline: '안녕하세요!',
@@ -71,10 +62,6 @@ const content: Record<Language, Content> = {
         ],
       },
     },
-    links: {
-      velog: '나의 벨로그 블로그',
-      github: 'GitHub',
-    },
   },
 }
 
@@ -85,7 +72,7 @@ export function AboutContent() {
   const t = content[lang]
 
   return (
-    <div className="container py-10 max-w-5xl">
+    <div className="mx-auto max-w-[800px] px-4 md:px-6 py-12 md:py-16">
       <div className="space-y-8">
         {/* Language Toggle */}
         <div className="flex justify-end">
@@ -141,29 +128,6 @@ export function AboutContent() {
                   </li>
                 ))}
               </ul>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Links */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Links</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4">
-              <Link href="https://velog.io/@kaameo/posts" target="_blank" rel="noreferrer">
-                <Button variant="outline" size="sm">
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  {t.links.velog}
-                </Button>
-              </Link>
-              <Link href="https://github.com/kaameo" target="_blank" rel="noreferrer">
-                <Button variant="outline" size="sm">
-                  <Github className="mr-2 h-4 w-4" />
-                  {t.links.github}
-                </Button>
-              </Link>
             </div>
           </CardContent>
         </Card>

@@ -25,8 +25,8 @@ export default async function PostsPage() {
   const posts = await getAllPosts()
 
   return (
-    <div className="mx-auto max-w-[720px] px-4 md:px-6 py-10 md:py-14">
-      <h1 className="text-3xl font-bold mb-8">Posts</h1>
+    <div className="mx-auto max-w-[800px] px-4 md:px-6 py-12 md:py-16">
+      <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-8">Posts</h1>
       <PostsSearchWrapper posts={posts} />
     </div>
   )
