@@ -120,9 +120,7 @@ export default function HomePageClient({ posts, topTags }: HomePageClientProps) 
           <div className="mb-6 flex items-end justify-between">
             <div>
               <h2 className="text-xl md:text-2xl font-bold tracking-tight">최근 포스트</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                새로 작성된 글을 모아 보세요
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">새로 작성된 글을 모아 보세요</p>
             </div>
             <Link
               href="/posts"
@@ -146,9 +144,7 @@ export default function HomePageClient({ posts, topTags }: HomePageClientProps) 
             <div className="mb-6 flex items-end justify-between">
               <div>
                 <h2 className="text-xl md:text-2xl font-bold tracking-tight">주제로 둘러보기</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  관심 있는 태그를 선택해보세요
-                </p>
+                <p className="mt-1 text-sm text-muted-foreground">관심 있는 태그를 선택해보세요</p>
               </div>
               <Link
                 href="/tags"

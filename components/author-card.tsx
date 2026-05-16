@@ -38,8 +38,8 @@ export function AuthorCard() {
               안녕하세요, <span className="text-primary">Kaameo</span>입니다.
             </h3>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              실제 문제를 푸는 기술을 좋아하는 개발자. 백엔드·DevOps·풀스택 사이를 오가며
-              배운 것을 기록합니다.
+              실제 문제를 푸는 기술을 좋아하는 개발자. 백엔드·DevOps·풀스택 사이를 오가며 배운 것을
+              기록합니다.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">

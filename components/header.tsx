@@ -34,7 +34,14 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-[800px] items-center justify-between px-4 md:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
-          <Image src="/favicon.svg" alt="" width={32} height={32} className="h-7 w-7" aria-hidden="true" />
+          <Image
+            src="/favicon.svg"
+            alt=""
+            width={32}
+            height={32}
+            className="h-7 w-7"
+            aria-hidden="true"
+          />
           Kaameo
         </Link>
 
@@ -89,8 +96,14 @@ export function Header() {
             aria-label="Toggle theme"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
+            <Sun
+              className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+              aria-hidden="true"
+            />
+            <Moon
+              className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+              aria-hidden="true"
+            />
           </Button>
 
           {/* Mobile Menu */}

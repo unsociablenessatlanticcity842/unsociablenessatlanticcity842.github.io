@@ -15,9 +15,7 @@ export default [
       'scripts/**',
     ],
   },
-  ...typescriptEslintPlugin.config(
-    typescriptEslintPlugin.configs.recommended,
-  ),
+  ...typescriptEslintPlugin.config(typescriptEslintPlugin.configs.recommended),
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {

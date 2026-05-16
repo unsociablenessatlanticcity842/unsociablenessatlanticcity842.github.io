@@ -13,17 +13,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command'
-import {
-  FileText,
-  Hash,
-  Folder,
-  Home,
-  User,
-  Moon,
-  Sun,
-  Newspaper,
-  ArrowRight,
-} from 'lucide-react'
+import { FileText, Hash, Folder, Home, User, Moon, Sun, Newspaper, ArrowRight } from 'lucide-react'
 import { tagToSlug } from '@/lib/slug'
 
 export interface PaletteItem {
@@ -77,25 +67,16 @@ export function CommandPalette({ posts, tags, categories }: CommandPaletteProps)
         <CommandEmpty>일치하는 결과가 없습니다.</CommandEmpty>
 
         <CommandGroup heading="바로가기">
-          <CommandItem
-            value="home 홈"
-            onSelect={() => run(() => router.push('/'))}
-          >
+          <CommandItem value="home 홈" onSelect={() => run(() => router.push('/'))}>
             <Home className="h-4 w-4 text-muted-foreground" />
             <span>홈</span>
             <CommandShortcut>↵</CommandShortcut>
           </CommandItem>
-          <CommandItem
-            value="posts 전체 포스트"
-            onSelect={() => run(() => router.push('/posts'))}
-          >
+          <CommandItem value="posts 전체 포스트" onSelect={() => run(() => router.push('/posts'))}>
             <Newspaper className="h-4 w-4 text-muted-foreground" />
             <span>전체 포스트</span>
           </CommandItem>
-          <CommandItem
-            value="about 소개"
-            onSelect={() => run(() => router.push('/about'))}
-          >
+          <CommandItem value="about 소개" onSelect={() => run(() => router.push('/about'))}>
             <User className="h-4 w-4 text-muted-foreground" />
             <span>소개</span>
           </CommandItem>
@@ -155,9 +136,7 @@ export function CommandPalette({ posts, tags, categories }: CommandPaletteProps)
                   value={`category ${category}`}
                   onSelect={() =>
                     run(() =>
-                      router.push(
-                        `/categories/${category.toLowerCase().replace(/\s+/g, '-')}`,
-                      ),
+                      router.push(`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`),
                     )
                   }
                 >

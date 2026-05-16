@@ -66,9 +66,7 @@ export default async function TagPage({ params }: TagPageProps) {
       <div className="mb-10 md:mb-12">
         <div className="mb-3 flex items-center gap-2">
           <span className="h-px w-8 bg-accent" />
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
-            Tag
-          </span>
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Tag</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
           <span className="text-muted-foreground">#</span>
