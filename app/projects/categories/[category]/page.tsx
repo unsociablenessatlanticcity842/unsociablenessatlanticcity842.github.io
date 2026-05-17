@@ -1,9 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import {
-  getAllProjectCategories,
-  getProjectsByCategory,
-} from '@/lib/projects'
+import { getAllProjectCategories, getProjectsByCategory } from '@/lib/projects'
 import { ProjectCard } from '@/components/project-card'
 
 interface CategoryPageProps {

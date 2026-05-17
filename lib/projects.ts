@@ -12,6 +12,7 @@ import { extractHeadings, type Heading } from './extract-headings'
 import { ReactElement } from 'react'
 import { mdxComponents } from '@/components/mdx-components'
 import { projectFrontmatterSchema } from './project-frontmatter-schema'
+import { fetchStarCountFromUrl } from './github-stars'
 
 const projectsDirectory = path.join(process.cwd(), 'content/projects')
 
@@ -35,6 +36,7 @@ export type Project = {
   stack?: string[]
   period?: string
   status?: ProjectStatus
+  stars?: number
 }
 
 export type ProjectMatter = {
@@ -150,6 +152,7 @@ export async function getProjectBySlug(slug: string) {
   const headings = extractHeadings(content)
 
   const category = data.category || fileInfo.category
+  const stars = typeof data.github === 'string' ? await fetchStarCountFromUrl(data.github) : null
 
   return {
     slug: realSlug,
@@ -160,6 +163,7 @@ export async function getProjectBySlug(slug: string) {
     headings,
     category,
     ...(data as ProjectMatter),
+    ...(stars !== null && { stars }),
   } as Project & { content: ReactElement; rawContent: string }
 }
 
@@ -219,6 +223,18 @@ export async function getAllProjects(): Promise<Project[]> {
   }
 
   await scanDirectory(projectsDirectory)
+
+  // Enrich with GitHub star counts in parallel; failures are silent.
+  await Promise.all(
+    projects.map(async (project) => {
+      if (project.github) {
+        const stars = await fetchStarCountFromUrl(project.github)
+        if (stars !== null) {
+          project.stars = stars
+        }
+      }
+    }),
+  )
 
   return projects.sort((a, b) => (new Date(b.date) > new Date(a.date) ? 1 : -1))
 }

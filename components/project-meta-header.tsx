@@ -1,10 +1,11 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Github, ExternalLink, Calendar } from 'lucide-react'
+import { Github, ExternalLink, Calendar, Star } from 'lucide-react'
 import type { Project } from '@/lib/projects'
+import { formatStarCount } from '@/lib/github-stars'
 
 interface ProjectMetaHeaderProps {
-  project: Pick<Project, 'github' | 'demo' | 'stack' | 'period' | 'status'>
+  project: Pick<Project, 'github' | 'demo' | 'stack' | 'period' | 'status' | 'stars'>
 }
 
 export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps) {
@@ -52,6 +53,12 @@ export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps) {
               <a href={project.github} target="_blank" rel="noopener noreferrer">
                 <Github className="h-4 w-4 mr-2" />
                 GitHub
+                {typeof project.stars === 'number' && (
+                  <span className="ml-2 inline-flex items-center gap-0.5 text-muted-foreground">
+                    <Star className="h-3.5 w-3.5" />
+                    {formatStarCount(project.stars)}
+                  </span>
+                )}
               </a>
             </Button>
           )}

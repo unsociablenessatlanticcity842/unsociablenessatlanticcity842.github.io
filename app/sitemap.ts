@@ -2,10 +2,7 @@ import { MetadataRoute } from 'next'
 import { getAllPosts } from '@/lib/mdx'
 import { getAllProjects } from '@/lib/projects'
 import { getCategoriesWithCount, getTagsWithCount } from '@/lib/posts-data'
-import {
-  getProjectCategoriesWithCount,
-  getProjectTagsWithCount,
-} from '@/lib/projects-data'
+import { getProjectCategoriesWithCount, getProjectTagsWithCount } from '@/lib/projects-data'
 import { tagToSlug } from '@/lib/slug'
 
 // Required for static export

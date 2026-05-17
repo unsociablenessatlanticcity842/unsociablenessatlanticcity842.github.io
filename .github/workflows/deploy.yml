@@ -4,6 +4,9 @@ on:
   push:
     branches: ['main']
   workflow_dispatch:
+  schedule:
+    # 매일 00:00 UTC (한국 시간 09:00) — GitHub star 수 갱신용 재빌드
+    - cron: '0 0 * * *'
 
 permissions:
   contents: read
@@ -34,6 +37,7 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
           NEXT_PUBLIC_GISCUS_REPO: ${{ vars.NEXT_PUBLIC_GISCUS_REPO }}
           NEXT_PUBLIC_GISCUS_REPO_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_REPO_ID }}

@@ -111,12 +111,18 @@ async function createProject() {
 
   const stackInput = await question('🛠  기술 스택 (쉼표로 구분, 예: Next.js, TypeScript): ')
   const stack = stackInput.trim()
-    ? stackInput.split(',').map((s) => s.trim()).filter(Boolean)
+    ? stackInput
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
     : []
 
   const tagsInput = await question('🏷  태그 (쉼표로 구분, Enter로 건너뛰기): ')
   const tags = tagsInput.trim()
-    ? tagsInput.split(',').map((t) => t.trim()).filter(Boolean)
+    ? tagsInput
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean)
     : []
 
   const period = await question('📅 진행 기간 (예: 2024.01 ~ 2024.06, Enter로 건너뛰기): ')

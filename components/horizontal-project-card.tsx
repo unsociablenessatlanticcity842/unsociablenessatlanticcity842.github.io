@@ -19,9 +19,7 @@ export function HorizontalProjectCard({ project, className }: HorizontalProjectC
               {project.title}
             </h3>
 
-            <p className="mt-2 text-muted-foreground text-sm line-clamp-2">
-              {project.description}
-            </p>
+            <p className="mt-2 text-muted-foreground text-sm line-clamp-2">{project.description}</p>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <time>{project.period || formatDate(project.date)}</time>

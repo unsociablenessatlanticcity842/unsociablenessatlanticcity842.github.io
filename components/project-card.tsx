@@ -1,17 +1,11 @@
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Github, ExternalLink } from 'lucide-react'
+import { Calendar, Github, ExternalLink, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Project } from '@/lib/projects'
+import { formatStarCount } from '@/lib/github-stars'
 
 interface ProjectCardProps {
   project: Project
@@ -32,7 +26,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
             {project.title}
           </CardTitle>
         </Link>
-        <CardDescription className="flex flex-wrap items-center gap-3 text-xs">
+        <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
             {project.period || formatDate(project.date)}
@@ -42,7 +36,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
               {project.status}
             </Badge>
           )}
-        </CardDescription>
+        </div>
       </CardHeader>
       <CardContent className="flex-1">
         <Link href={`/projects/${project.slug}`}>
@@ -77,6 +71,12 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
               >
                 <Github className="h-3.5 w-3.5" />
                 GitHub
+                {typeof project.stars === 'number' && (
+                  <span className="ml-1 inline-flex items-center gap-0.5">
+                    <Star className="h-3 w-3" />
+                    {formatStarCount(project.stars)}
+                  </span>
+                )}
               </a>
             )}
             {project.demo && (
