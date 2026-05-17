@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "new-post": "node scripts/create-post.js"
+    "new-post": "node scripts/create-post.js",
+    "new-project": "node scripts/create-project.js"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",

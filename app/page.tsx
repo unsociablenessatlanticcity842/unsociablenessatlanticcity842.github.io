@@ -1,4 +1,5 @@
 import { getAllPosts } from '@/lib/mdx'
+import { getAllProjects } from '@/lib/projects'
 import { tagToSlug } from '@/lib/slug'
 import HomePageClient from './home-page-client'
 import { WebSiteStructuredData } from '@/components/structured-data'
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const posts = await getAllPosts()
+  const [posts, projects] = await Promise.all([getAllPosts(), getAllProjects()])
 
   // Top tags by post count (max 10)
   const tagCounts = new Map<string, number>()
@@ -28,7 +29,7 @@ export default async function HomePage() {
   return (
     <>
       <WebSiteStructuredData />
-      <HomePageClient posts={posts} topTags={topTags} />
+      <HomePageClient posts={posts} projects={projects} topTags={topTags} />
     </>
   )
 }

@@ -14,6 +14,7 @@ import { COMMAND_PALETTE_EVENT } from '@/components/command-palette'
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/posts', label: 'Posts' },
+  { href: '/projects', label: 'Projects' },
   { href: '/about', label: 'About' },
 ]
 

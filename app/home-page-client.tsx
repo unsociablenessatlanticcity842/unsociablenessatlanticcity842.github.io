@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { HorizontalPostCard } from '@/components/horizontal-post-card'
+import { ProjectCard } from '@/components/project-card'
 import { AuthorCard } from '@/components/author-card'
 import { ArrowRight, Sparkles, Hash } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import type { Post } from '@/lib/mdx'
+import type { Project } from '@/lib/projects'
 
 interface TopTag {
   name: string
@@ -16,12 +18,14 @@ interface TopTag {
 
 interface HomePageClientProps {
   posts: Post[]
+  projects: Project[]
   topTags: TopTag[]
 }
 
-export default function HomePageClient({ posts, topTags }: HomePageClientProps) {
+export default function HomePageClient({ posts, projects, topTags }: HomePageClientProps) {
   const featuredPost = posts[0]
   const recentPosts = posts.slice(1, 7)
+  const featuredProjects = projects.slice(0, 3)
 
   return (
     <div>
@@ -137,6 +141,33 @@ export default function HomePageClient({ posts, topTags }: HomePageClientProps) 
             ))}
           </div>
         </section>
+
+        {/* Featured Projects */}
+        {featuredProjects.length > 0 && (
+          <section className="pb-16 border-t pt-12">
+            <div className="mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">Featured Projects</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  그동안 만들고 실험했던 프로젝트
+                </p>
+              </div>
+              <Link
+                href="/projects"
+                className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
+              >
+                모두 보기
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              {featuredProjects.map((project) => (
+                <ProjectCard key={project.slug} project={project} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Browse by Topic */}
         {topTags.length > 0 && (
