@@ -35,14 +35,16 @@ export function GiscusComments({ className = '' }: GiscusCommentsProps) {
     <section className={`mt-16 ${className}`} aria-label="댓글 섹션">
       <h2 className="text-2xl font-bold mb-8">댓글</h2>
       <div className="rounded-lg border bg-card p-6">
+        {/* repoId/categoryId는 클라이언트 번들에 인라인되는 공개 식별자다.
+            폴백을 두어 .env.local 없이도 로컬 개발에서 댓글이 동작한다. */}
         <Giscus
           repo={
             (process.env.NEXT_PUBLIC_GISCUS_REPO ||
               'kaameo/kaameo.github.io') as `${string}/${string}`
           }
-          repoId={process.env.NEXT_PUBLIC_GISCUS_REPO_ID || ''}
+          repoId={process.env.NEXT_PUBLIC_GISCUS_REPO_ID || 'R_kgDOTjWb8A'}
           category={process.env.NEXT_PUBLIC_GISCUS_CATEGORY || 'Announcements'}
-          categoryId={process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || ''}
+          categoryId={process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || 'DIC_kwDOTjWb8M4DB87H'}
           mapping="pathname"
           strict="0"
           reactionsEnabled="1"
