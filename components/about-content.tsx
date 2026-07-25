@@ -101,13 +101,13 @@ export function AboutContent() {
               <a href="/hong-jinsu_resume.pdf" download>
                 <Button variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4" />
-                  {lang === 'ko' ? '이력서' : 'Resume'}
+                  {lang === 'ko' ? '이력서.pdf' : 'Resume.pdf'}
                 </Button>
               </a>
               <a href="/hong-jinsu_work_experience.pdf" download>
                 <Button variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4" />
-                  {lang === 'ko' ? '경력기술서' : 'Career Summary'}
+                  {lang === 'ko' ? '경력기술서.pdf' : 'Career Summary.pdf'}
                 </Button>
               </a>
             </div>
