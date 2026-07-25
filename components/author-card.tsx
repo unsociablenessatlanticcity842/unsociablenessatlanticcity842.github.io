@@ -21,7 +21,7 @@ export function AuthorCard() {
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 -m-1 rounded-full bg-gradient-to-tr from-primary to-accent opacity-70 blur-md" />
             <Image
-              src="/favicon.svg"
+              src="/icon.svg"
               alt="Kaameo"
               width={56}
               height={56}
